@@ -1,6 +1,5 @@
 package tetris;
 
-/*test*/import java.awt.Color;
 import javax.swing.JFrame;
 
 public class Core {
