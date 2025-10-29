@@ -14,10 +14,10 @@ public class Core {
         window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         window.setResizable(false);
         window.setLocationRelativeTo(null);
-        window.setVisible(true);
 
         board = new Board();
         window.add(board);
+        window.setVisible(true);
     }
 
     public static void main(String[] args) {
