@@ -17,6 +17,7 @@ public class Board extends JPanel {
             {Color.RED, Color.RED, Color.RED},
             {null, Color.RED, null},
     };
+    private boolean gameOver = false;
 
     public boolean canMove(int deltaX, int deltaY) {
         for (int row = 0; row < shape.length; row++) {
@@ -42,10 +43,13 @@ public class Board extends JPanel {
         looper = new Timer(1000, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                if (gameOver) return;
+
                 if (canMove(0, 1)) {
                     moveShapeDown();
                 } else {
                     fixShape();
+                    spawnNewShape();
                 }
                 repaint();
             }
@@ -72,6 +76,19 @@ public class Board extends JPanel {
             }
         }
     }
+    private void spawnNewShape() {
+        shape = new Color[][] {
+                {Color.RED, Color.RED, Color.RED},
+                {null, Color.RED, null},
+        };
+
+        if (!canMove(0, 0)) {
+            gameOver = true;
+            looper.stop();
+            System.out.println("GAME OVER!");
+        }
+    }
+
 
     @Override
     protected void paintComponent(Graphics g) {
@@ -103,6 +120,12 @@ public class Board extends JPanel {
                     g.fillRect(col * BLOCK_SIZE, row * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
                 }
             }
+        }
+
+        if (gameOver) {
+            g.setColor(Color.WHITE);
+            g.setFont(new Font("Georgia", Font.BOLD, 30));
+            g.drawString("GAME OVER", getWidth() / 4, getHeight() / 2);
         }
     }
 }
