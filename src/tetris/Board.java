@@ -3,10 +3,17 @@ package tetris;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
-public class Board extends JPanel {
+public class Board extends JPanel implements KeyListener {
+    
+    private static int FPS = 60;
+    private static int delay = 1000 / FPS;
+
     private static final int BOARD_WIDTH = 10;
     private static final int BOARD_HEIGHT = 20;
     private static final int BLOCK_SIZE = 30;
@@ -18,12 +25,22 @@ public class Board extends JPanel {
             {null, Color.RED, null},
     };
 
+    private int x = 4, y = 0;
+    private int normal = 600;
+    private int fast = 50;
+    private int delayTimeForMovement = normal;
+    private long beginTime;
+
     public Board() {
-        looper = new Timer(1000, new ActionListener() {
+        looper = new Timer(delay, new ActionListener() {
             int n = 0;
             @Override
             public void  actionPerformed(ActionEvent e){
-                System.out.println(n++);
+                if(System.currentTimeMillis() - beginTime > delayTimeForMovement) {
+                    y++;
+                    beginTime = System.currentTimeMillis();
+                } 
+                repaint();
             }
         });
         looper.start();
@@ -40,7 +57,7 @@ public class Board extends JPanel {
             for (int col = 0; col < shape[row].length; col++) {
                 if (shape[row][col] != null) {
                     g.setColor(shape[row][col]);
-                g.fillRect(col * BLOCK_SIZE, row * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE );
+                    g.fillRect(col * BLOCK_SIZE + x * BLOCK_SIZE, row * BLOCK_SIZE + y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE );
                 }
             }
         }
@@ -55,4 +72,22 @@ public class Board extends JPanel {
             g.drawLine(col * BLOCK_SIZE, 0, col * BLOCK_SIZE, BLOCK_SIZE * BOARD_HEIGHT);
         }
     }
+
+    @Override
+    public void keyTyped(KeyEvent e) { }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+            delayTimeForMovement = fast;
+        }
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+            delayTimeForMovement = normal;
+        }
+    }
+
 }
