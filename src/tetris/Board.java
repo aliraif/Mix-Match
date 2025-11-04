@@ -9,7 +9,9 @@ import javax.swing.JPanel;
 import javax.swing.Timer;
 
 public class Board extends JPanel implements KeyListener {
-    
+    private int score = 0;
+
+
     private static int FPS = 60;
     private static int delay = 1000 / FPS;
 
@@ -32,15 +34,22 @@ public class Board extends JPanel implements KeyListener {
 
     private int deltaX = 0;
     private boolean collision = false;
+    private boolean gameOver = false;
 
     public Board() {
         looper = new Timer(delay, new ActionListener() {
             int n = 0;
             @Override
             public void  actionPerformed(ActionEvent e){
-                if(collision) {
+                if (gameOver) {
+                    repaint();
                     return;
                 }
+                if(collision) {
+                    placeShape();
+                    return;
+                }
+
 
                 // check moving horizontal
                 if(!(x + deltaX + shape[0].length > 10) && !(x + deltaX < 0)) {
@@ -60,6 +69,28 @@ public class Board extends JPanel implements KeyListener {
             }
         });
         looper.start();
+    }
+    private void placeShape() {
+        for (int row = 0; row < shape.length; row++) {
+            for (int col = 0; col < shape[row].length; col++) {
+                if (shape[row][col] != null) {
+                    board[y + row][x + col] = shape[row][col];
+                }
+            }
+        }
+
+        checkGameOver();
+    }
+    private void checkGameOver() {
+        for (int col = 0; col < BOARD_WIDTH; col++) {
+            if (board[0][col] != null) {
+                gameOver = true;
+                return;
+            }
+        }
+    }
+    public Color[][] getBoard() {
+        return board;
     }
 
     @Override
@@ -87,13 +118,20 @@ public class Board extends JPanel implements KeyListener {
         for (int col = 0; col < BOARD_WIDTH; col++) {
             g.drawLine(col * BLOCK_SIZE, 0, col * BLOCK_SIZE, BLOCK_SIZE * BOARD_HEIGHT);
         }
+        if (gameOver) {
+            g.setFont(new Font("Georgia", Font.BOLD, 30));
+            g.setColor(Color.white);
+            g.drawString("GAME OVER", 50, 300);
+        }
     }
+
 
     @Override
     public void keyTyped(KeyEvent e) { }
 
     @Override
     public void keyPressed(KeyEvent e) {
+        if (gameOver) return;
         if (e.getKeyCode() == KeyEvent.VK_DOWN) {
             delayTimeForMovement = fast;
         } else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
@@ -105,9 +143,13 @@ public class Board extends JPanel implements KeyListener {
 
     @Override
     public void keyReleased(KeyEvent e) {
+        if (gameOver) return;
         if (e.getKeyCode() == KeyEvent.VK_DOWN) {
             delayTimeForMovement = normal;
         }
+    }
+    public void addScore() {
+        score++;
     }
 
 }
