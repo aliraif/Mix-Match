@@ -105,6 +105,7 @@ public class Board extends JPanel {
             }
         }
 
+
         g.setColor(Color.white);
         for (int row = 0; row < BOARD_HEIGHT; row++) {
             g.drawLine(0, BLOCK_SIZE * row, BLOCK_SIZE * BOARD_WIDTH, BLOCK_SIZE * row);
