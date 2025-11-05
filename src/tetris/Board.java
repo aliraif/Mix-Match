@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.Random;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
@@ -19,24 +20,66 @@ public class Board extends JPanel implements KeyListener {
     private static final int BOARD_HEIGHT = 20;
     private static final int BLOCK_SIZE = 30;
     private Timer looper;
-    private Color[][] board = new Color[BOARD_WIDTH][BOARD_HEIGHT];
-
-    private Color[][] shape = {
-            {Color.RED, Color.RED, Color.RED},
-            {null, Color.RED, null},
-    };
-
-    private int x = 4, y = 0;
-    private int normal = 600;
-    private int fast = 50;
-    private int delayTimeForMovement = normal;
-    private long beginTime;
-
-    private int deltaX = 0;
-    private boolean collision = false;
+    private Color[][] board = new Color[BOARD_HEIGHT][BOARD_WIDTH];
     private boolean gameOver = false;
 
+    private Random random;
+
+    //Array of Colors
+    private Color[] colors = {Color.decode("#ed1c24"),Color.decode("#ff7f27"),Color.decode("#fff200"),
+            Color.decode("#22b14c"),Color.decode("#00a2e8"),Color.decode("#a349a4"),Color.decode("#3f48cc")};
+
+    //Array of Shape
+    private Shape[] shapes = new Shape[8];
+
+    private Shape currentShape;
+
     public Board() {
+        random = new Random();
+
+        shapes[0] = new Shape(new int[][]{ //shape l
+                {1,1,1,1}
+        }, this, colors[0]);
+
+        shapes[1] = new Shape(new int[][]{ //shape t
+                {1,1,1},
+                {0,1,0}
+        }, this, colors[0]);
+
+        shapes[2] = new Shape(new int[][]{ //shape l1
+                {1,1,1},
+                {1,0,0}
+        }, this, colors[0]);
+
+        shapes[3] = new Shape(new int[][]{ //shape l2
+                {1,1,1},
+                {0,0,1}
+        }, this, colors[0]);
+
+        shapes[4] = new Shape(new int[][]{ //shape s
+                {0,1,1},
+                {1,1,0}
+        }, this, colors[0]);
+
+        shapes[5] = new Shape(new int[][]{ //shape z
+                {1,1,0},
+                {0,1,1}
+        }, this, colors[0]);
+
+        shapes[6] = new Shape(new int[][]{ //shape square
+                {1,1},
+                {1,1}
+        }, this, colors[0]);
+
+        shapes[7] = new Shape(new int[][]{ //shape l
+                {1},
+                {1},
+                {1},
+                {1}
+        }, this, colors[0]);
+
+        currentShape = shapes[0];
+
         looper = new Timer(delay, new ActionListener() {
             int n = 0;
             @Override
@@ -45,42 +88,17 @@ public class Board extends JPanel implements KeyListener {
                     repaint();
                     return;
                 }
-                if(collision) {
-                    placeShape();
-                    return;
-                }
-
-
-                // check moving horizontal
-                if(!(x + deltaX + shape[0].length > 10) && !(x + deltaX < 0)) {
-                    x+= deltaX;
-                }
-                deltaX = 0;
-
-                if(System.currentTimeMillis() - beginTime > delayTimeForMovement) {
-                    if(!(y + 1 + shape.length > BOARD_HEIGHT)) {
-                        y++;
-                    } else {
-                        collision = true;
-                    }
-                    beginTime = System.currentTimeMillis();
-                } 
+                update();
                 repaint();
             }
         });
         looper.start();
     }
-    private void placeShape() {
-        for (int row = 0; row < shape.length; row++) {
-            for (int col = 0; col < shape[row].length; col++) {
-                if (shape[row][col] != null) {
-                    board[y + row][x + col] = shape[row][col];
-                }
-            }
-        }
-
-        checkGameOver();
+    private void update(){
+        currentShape.update();
     }
+
+
     private void checkGameOver() {
         for (int col = 0; col < BOARD_WIDTH; col++) {
             if (board[0][col] != null) {
@@ -99,18 +117,22 @@ public class Board extends JPanel implements KeyListener {
         g.setColor(Color.gray);
         g.fillRect(0, 0, getWidth(), getHeight());
 
-        //draw the shape
-        for (int row = 0; row < shape.length; row++) {
-            for (int col = 0; col < shape[row].length; col++) {
-                if (shape[row][col] != null) {
-                    g.setColor(shape[row][col]);
-                    g.fillRect(col * BLOCK_SIZE + x * BLOCK_SIZE, row * BLOCK_SIZE + y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE );
+        // draw current shape
+        currentShape.render(g);
+
+        // draw board block
+        for(int row = 0; row < board.length; row++){
+            for(int col = 0; col<board[row].length; col++){
+                if(board[row][col] != null){
+                    g.setColor(board[row][col]);
+                    g.fillRect(col * BLOCK_SIZE,row*BLOCK_SIZE,BLOCK_SIZE,BLOCK_SIZE);
                 }
+
             }
         }
 
-        //draw the board
-        g.setColor(Color.white);
+        // draw grid line
+        g.setColor(Color.gray);
         for (int row = 0; row < BOARD_HEIGHT; row++) {
             g.drawLine(0, BLOCK_SIZE * row,BLOCK_SIZE * BOARD_WIDTH, BLOCK_SIZE * row);
         }
@@ -118,6 +140,12 @@ public class Board extends JPanel implements KeyListener {
         for (int col = 0; col < BOARD_WIDTH; col++) {
             g.drawLine(col * BLOCK_SIZE, 0, col * BLOCK_SIZE, BLOCK_SIZE * BOARD_HEIGHT);
         }
+
+        // draw border around the grid
+        g.setColor(Color.white);
+        g.drawRect(0, 0, BOARD_WIDTH * BLOCK_SIZE, BOARD_HEIGHT * BLOCK_SIZE);
+
+
         if (gameOver) {
             g.setFont(new Font("Georgia", Font.BOLD, 30));
             g.setColor(Color.white);
@@ -125,27 +153,41 @@ public class Board extends JPanel implements KeyListener {
         }
     }
 
+    public void setCurrentShape() {
+        // Pick a random shape type index
+        int shapeIndex = random.nextInt(shapes.length);
+
+        // Get the shape pattern from shapes array at that index
+        int[][] shapePattern = shapes[shapeIndex].getPattern();
+
+        // Assign a new Shape with the same pattern but a new random color
+        currentShape = new Shape(shapePattern, this, colors[random.nextInt(colors.length)]);
+
+        currentShape.reset();
+    }
+
+
 
     @Override
     public void keyTyped(KeyEvent e) { }
 
     @Override
     public void keyPressed(KeyEvent e) {
-        if (gameOver) return;
+
         if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-            delayTimeForMovement = fast;
+            currentShape.speedUp();
         } else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-            deltaX = 1;
+            currentShape.moveRight();
         } else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-            deltaX = -1;
+            currentShape.moveLeft();
         }
     }
 
     @Override
     public void keyReleased(KeyEvent e) {
-        if (gameOver) return;
+
         if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-            delayTimeForMovement = normal;
+            currentShape.speedDown();
         }
     }
     public void addScore() {
