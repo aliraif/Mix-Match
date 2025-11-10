@@ -16,7 +16,7 @@ public class Board extends JPanel implements KeyListener {
     private static int FPS = 60;
     private static int delay = 1000 / FPS;
 
-    private static final int BOARD_WIDTH = 10;
+    public static final int BOARD_WIDTH = 10;
     private static final int BOARD_HEIGHT = 20;
     private static final int BLOCK_SIZE = 30;
     private Timer looper;
@@ -180,6 +180,8 @@ public class Board extends JPanel implements KeyListener {
             currentShape.moveRight();
         } else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
             currentShape.moveLeft();
+        } else if (e.getKeyCode() == KeyEvent.VK_UP) {
+            currentShape.rotateShape();
         }
     }
 

@@ -121,6 +121,47 @@ public class Shape {
         }
     }
 
+    public void rotateShape() {
+        int[][] rotatedShape = transposeMatrix(coords);
+        reverseRows(rotatedShape);
+        //check for right side and bottom
+        if((x + rotatedShape[0].length > Board.BOARD_WIDTH) || (y + rotatedShape.length > 20)) {
+            return;
+        }
+
+        // Check for collision with other shapes before retated
+        for(int row = 0; row < rotatedShape.length; row++) {
+            for(int col = 0; col < rotatedShape[row].length; col++) {
+                if(rotatedShape[row][col] != 0) {
+                    if(board.getBoard()[y + row][x + col] != null) {
+                        return;
+                    }
+                }
+            }
+        }
+        coords = rotatedShape;
+    }
+
+    private int[][] transposeMatrix(int[][] matrix) {
+        int[][] temp = new int[matrix[0].length][matrix.length];
+        for(int row = 0; row < matrix.length; row++) {
+            for(int col = 0; col < matrix[0].length; col++) {
+                temp[col][row] = matrix[row][col];
+            }
+        }
+        return temp;
+    }
+
+    private void reverseRows(int[][] matrix) {
+        int middle = matrix.length / 2;
+        for(int row = 0; row < middle; row++) {
+            int[] temp = matrix[row];
+            matrix[row] = matrix[matrix.length - row - 1];
+            matrix[matrix.length - row - 1] = temp;
+        }
+
+    }
+
     public void render(Graphics g){
         //draw the shape
         for (int row = 0; row < coords.length; row++) {
