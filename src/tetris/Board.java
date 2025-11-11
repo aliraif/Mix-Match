@@ -114,7 +114,7 @@ public class Board extends JPanel implements KeyListener {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        g.setColor(Color.gray);
+        g.setColor(Color.black);
         g.fillRect(0, 0, getWidth(), getHeight());
 
         // draw current shape
@@ -132,18 +132,36 @@ public class Board extends JPanel implements KeyListener {
         }
 
         // draw grid line
-        g.setColor(Color.gray);
+        g.setColor(Color.black);
         for (int row = 0; row < BOARD_HEIGHT; row++) {
             g.drawLine(0, BLOCK_SIZE * row,BLOCK_SIZE * BOARD_WIDTH, BLOCK_SIZE * row);
         }
 
-        g.setColor(Color.lightGray);
+        g.setColor(Color.black);
         for (int col = 0; col < BOARD_WIDTH; col++) {
             g.drawLine(col * BLOCK_SIZE, 0, col * BLOCK_SIZE, BLOCK_SIZE * BOARD_HEIGHT);
         }
 
+        Graphics2D g2d = (Graphics2D) g.create();
+
+        // Define a dashed stroke: {dash length, gap length}
+        float[] dashPattern = {6f, 8f}; // Adjust these values to control dot size and spacing
+        Stroke dashed = new BasicStroke(1f, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10f, dashPattern, 0f);
+
+        g2d.setStroke(dashed);
+
+        g2d.setColor(Color.darkGray);
+        for (int row = 0; row < BOARD_HEIGHT; row++) {
+            g2d.drawLine(0, BLOCK_SIZE * row, BLOCK_SIZE * BOARD_WIDTH, BLOCK_SIZE * row);
+        }
+        for (int col = 0; col < BOARD_WIDTH; col++) {
+            g2d.drawLine(col * BLOCK_SIZE, 0, col * BLOCK_SIZE, BLOCK_SIZE * BOARD_HEIGHT);
+        }
+        g2d.dispose();
+
+
         // draw border around the grid
-        g.setColor(Color.black);
+        g.setColor(Color.LIGHT_GRAY);
         g.drawRect(0, 0, BOARD_WIDTH * BLOCK_SIZE, BOARD_HEIGHT * BLOCK_SIZE);
 
 
