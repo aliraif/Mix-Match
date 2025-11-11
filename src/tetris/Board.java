@@ -16,7 +16,7 @@ import java.awt.image.BufferedImage;
 public class Board extends JPanel implements KeyListener, MouseListener, MouseMotionListener {
 
     private int score = 0;
-
+    private String font = "GEORGIA";
 
     private static int FPS = 60;
     private static int delay = 1000 / FPS;
@@ -46,6 +46,8 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
     private Shape currentShape, nextShape;
 
     public Board() {
+        addMouseListener(this);
+        addMouseMotionListener(this);
 
         pause = ImageLoader.loadImage("/pause.png");
         refresh = ImageLoader.loadImage("/refresh.png");
@@ -159,18 +161,7 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
             g.drawImage(refresh, refreshBounds.x, refreshBounds.y, null);
         }
 
-        if (gamePaused) {
-            String gamePausedString = "GAME PAUSED";
-            g.setColor(Color.WHITE);
-            g.setFont(new Font("Georgia", Font.BOLD, 30));
-            g.drawString(gamePausedString, 35, WindowGame.HEIGHT / 2);
-        }
-        if (gameOver) {
-            String gameOverString = "GAME OVER";
-            g.setColor(Color.WHITE);
-            g.setFont(new Font("Georgia", Font.BOLD, 30));
-            g.drawString(gameOverString, 50, WindowGame.HEIGHT / 2);
-        }
+
 
         // draw board block
         for(int row = 0; row < board.length; row++){
@@ -216,6 +207,23 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
         g.setColor(Color.LIGHT_GRAY);
         g.drawRect(0, 0, BOARD_WIDTH * BLOCK_SIZE, BOARD_HEIGHT * BLOCK_SIZE);
 
+        //draw the score
+        g.setFont(new Font(font, Font.BOLD, 25));
+        g.drawString("SCORE", WindowGame.WIDTH - 125, WindowGame.HEIGHT - 600 );
+        g.drawString(score + "", WindowGame.WIDTH - 90, WindowGame.HEIGHT - 570);
+
+        if (gamePaused) {
+            String gamePausedString = "GAME PAUSED";
+            g.setColor(Color.WHITE);
+            g.setFont(new Font(font, Font.BOLD, 25));
+            g.drawString(gamePausedString, 35, WindowGame.HEIGHT / 2);
+        }
+        if (gameOver) {
+            String gameOverString2 = "GAME OVER";
+            g.setColor(Color.magenta);
+            g.setFont(new Font(font, Font.BOLD, 30));
+            g.drawString(gameOverString2, 50, WindowGame.HEIGHT / 2);
+        }
     }
 
     public void setNextShape() {
@@ -265,8 +273,8 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
             currentShape.speedDown();
         }
     }
-    public void addScore() {
-        score++;
+    public void addScore(int score) {
+        this.score += score;
     }
 
     public void startGame() {
@@ -328,5 +336,7 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
     @Override
     public void mouseExited(MouseEvent e) {
     }
+
+
 }
 

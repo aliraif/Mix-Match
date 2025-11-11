@@ -54,6 +54,7 @@ public class Shape {
                 }
             }
             checkLine();
+            board.addScore(1);
             // set current shape
             board.setCurrentShape();
 
@@ -113,6 +114,10 @@ public class Shape {
                     count++;
                 }
                 board.getBoard()[bottomLine][col] = board.getBoard()[topLine][col];
+            }
+            //check if line clear to add 10 score
+            if (count == board.getBoard()[0].length) {
+                board.addScore(10);
             }
             if(count < board.getBoard() [0].length) {
                 bottomLine--;
