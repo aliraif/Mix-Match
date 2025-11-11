@@ -137,12 +137,13 @@ public class Board extends JPanel implements KeyListener {
             g.drawLine(0, BLOCK_SIZE * row,BLOCK_SIZE * BOARD_WIDTH, BLOCK_SIZE * row);
         }
 
+        g.setColor(Color.lightGray);
         for (int col = 0; col < BOARD_WIDTH; col++) {
             g.drawLine(col * BLOCK_SIZE, 0, col * BLOCK_SIZE, BLOCK_SIZE * BOARD_HEIGHT);
         }
 
         // draw border around the grid
-        g.setColor(Color.white);
+        g.setColor(Color.black);
         g.drawRect(0, 0, BOARD_WIDTH * BLOCK_SIZE, BOARD_HEIGHT * BLOCK_SIZE);
 
 
@@ -173,14 +174,14 @@ public class Board extends JPanel implements KeyListener {
 
     @Override
     public void keyPressed(KeyEvent e) {
-
-        if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+        int key = e.getKeyCode();
+        if (key == KeyEvent.VK_DOWN || key == KeyEvent.VK_S) {
             currentShape.speedUp();
-        } else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+        } else if (key == KeyEvent.VK_RIGHT || key == KeyEvent.VK_D) {
             currentShape.moveRight();
-        } else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+        } else if (key == KeyEvent.VK_LEFT || key == KeyEvent.VK_A) {
             currentShape.moveLeft();
-        } else if (e.getKeyCode() == KeyEvent.VK_UP) {
+        } else if (key == KeyEvent.VK_UP || key == KeyEvent.VK_W) {
             currentShape.rotateShape();
         }
     }
@@ -188,7 +189,7 @@ public class Board extends JPanel implements KeyListener {
     @Override
     public void keyReleased(KeyEvent e) {
 
-        if (e.getKeyCode() == KeyEvent.VK_DOWN) {
+        if (e.getKeyCode() == KeyEvent.VK_DOWN || e.getKeyCode() == KeyEvent.VK_S) {
             currentShape.speedDown();
         }
     }
