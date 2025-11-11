@@ -174,6 +174,10 @@ public class Shape {
         }
     }
 
+    public int[][] getCoords() {
+        return coords;
+    }
+
     public void speedUp(){
         delayTimeForMovement = fast;
     }
@@ -189,5 +193,9 @@ public class Shape {
     public void moveLeft(){
         deltaX = -1;
     }
+
+    public int getY() {return y; }
+
+    public int getX() {return x; }
 
 }

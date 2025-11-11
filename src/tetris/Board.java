@@ -5,11 +5,16 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.util.Random;
 import javax.swing.JPanel;
 import javax.swing.Timer;
+import java.awt.image.BufferedImage;
 
-public class Board extends JPanel implements KeyListener {
+public class Board extends JPanel implements KeyListener, MouseListener, MouseMotionListener {
+
     private int score = 0;
 
 
@@ -22,6 +27,12 @@ public class Board extends JPanel implements KeyListener {
     private Timer looper;
     private Color[][] board = new Color[BOARD_HEIGHT][BOARD_WIDTH];
     private boolean gameOver = false;
+    private boolean gamePaused = false;
+
+    private int mouseX, mouseY;
+
+    private BufferedImage pause, refresh;
+    private Rectangle stopBounds, refreshBounds;
 
     private Random random;
 
@@ -32,9 +43,15 @@ public class Board extends JPanel implements KeyListener {
     //Array of Shape
     private Shape[] shapes = new Shape[8];
 
-    private Shape currentShape;
+    private Shape currentShape, nextShape;
 
     public Board() {
+
+        pause = ImageLoader.loadImage("/pause.png");
+        refresh = ImageLoader.loadImage("/refresh.png");
+
+        stopBounds = new Rectangle(350,500, pause.getWidth(), pause.getHeight() + pause.getHeight() / 2);
+        refreshBounds = new Rectangle(350, 500 - refresh.getHeight() - 20, refresh.getWidth(), refresh.getHeight() + refresh.getHeight() / 2);
         random = new Random();
 
         shapes[0] = new Shape(new int[][]{ //shape l
@@ -94,16 +111,25 @@ public class Board extends JPanel implements KeyListener {
         });
         looper.start();
     }
-    private void update(){
-        currentShape.update();
+
+
+    private void update() {
+        if(gameOver || gamePaused) {
+            return;
+        }
+            currentShape.update();
     }
 
 
     private void checkGameOver() {
-        for (int col = 0; col < BOARD_WIDTH; col++) {
-            if (board[0][col] != null) {
-                gameOver = true;
-                return;
+        int[][] coords = currentShape.getCoords();
+        for (int row = 0; row < coords.length; row++) {
+            for (int col = 0; col < coords[0].length; col++) {
+                if (coords[row][col] != 0) {
+                    if (board[row + currentShape.getY()][col + currentShape.getX()] != null) {
+                        gameOver = true;
+                    }
+                }
             }
         }
     }
@@ -119,6 +145,32 @@ public class Board extends JPanel implements KeyListener {
 
         // draw current shape
         currentShape.render(g);
+
+        if (stopBounds.contains(mouseX, mouseY)) {
+            g.drawImage(pause.getScaledInstance(pause.getWidth() + 3, pause.getHeight() + 3, BufferedImage.SCALE_DEFAULT), stopBounds.x + 3, stopBounds.y + 3, null);
+        } else {
+            g.drawImage(pause, stopBounds.x, stopBounds.y, null);
+        }
+
+        if (refreshBounds.contains(mouseX, mouseY)) {
+            g.drawImage(refresh.getScaledInstance(refresh.getWidth() + 3, refresh.getHeight() + 3,
+                    BufferedImage.SCALE_DEFAULT), refreshBounds.x + 3, refreshBounds.y + 3, null);
+        } else {
+            g.drawImage(refresh, refreshBounds.x, refreshBounds.y, null);
+        }
+
+        if (gamePaused) {
+            String gamePausedString = "GAME PAUSED";
+            g.setColor(Color.WHITE);
+            g.setFont(new Font("Georgia", Font.BOLD, 30));
+            g.drawString(gamePausedString, 35, WindowGame.HEIGHT / 2);
+        }
+        if (gameOver) {
+            String gameOverString = "GAME OVER";
+            g.setColor(Color.WHITE);
+            g.setFont(new Font("Georgia", Font.BOLD, 30));
+            g.drawString(gameOverString, 50, WindowGame.HEIGHT / 2);
+        }
 
         // draw board block
         for(int row = 0; row < board.length; row++){
@@ -164,12 +216,12 @@ public class Board extends JPanel implements KeyListener {
         g.setColor(Color.LIGHT_GRAY);
         g.drawRect(0, 0, BOARD_WIDTH * BLOCK_SIZE, BOARD_HEIGHT * BLOCK_SIZE);
 
+    }
 
-        if (gameOver) {
-            g.setFont(new Font("Georgia", Font.BOLD, 30));
-            g.setColor(Color.white);
-            g.drawString("GAME OVER", 50, 300);
-        }
+    public void setNextShape() {
+        int index = random.nextInt(shapes.length);
+        int colorIndex = random.nextInt(colors.length);
+        nextShape = new Shape(shapes[index].getCoords(), this, colors[colorIndex]);
     }
 
     public void setCurrentShape() {
@@ -183,6 +235,7 @@ public class Board extends JPanel implements KeyListener {
         currentShape = new Shape(shapePattern, this, colors[random.nextInt(colors.length)]);
 
         currentShape.reset();
+        checkGameOver();
     }
 
 
@@ -202,6 +255,7 @@ public class Board extends JPanel implements KeyListener {
         } else if (key == KeyEvent.VK_UP || key == KeyEvent.VK_W) {
             currentShape.rotateShape();
         }
+
     }
 
     @Override
@@ -215,4 +269,64 @@ public class Board extends JPanel implements KeyListener {
         score++;
     }
 
+    public void startGame() {
+        stopGame();
+        setNextShape();
+        setCurrentShape();
+        gameOver = false;
+        looper.start();
+
+    }
+
+    public void stopGame() {
+        score = 0;
+
+        for (int row = 0; row < board.length; row++) {
+            for (int col = 0; col < board[row].length; col++) {
+                board[row][col] = null;
+            }
+        }
+        looper.stop();
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent e) {
+        mouseX = e.getX();
+        mouseY = e.getY();
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e) {
+        mouseX = e.getX();
+        mouseY = e.getY();
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+        mouseX = e.getX();
+        mouseY = e.getY();
+        if(stopBounds.contains(mouseX, mouseY)) {
+            gamePaused = !gamePaused;
+        }
+        if(refreshBounds.contains(mouseX,mouseY)) {
+            startGame();
+        }
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e) {
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+    }
 }
+
