@@ -16,7 +16,7 @@ import java.awt.image.BufferedImage;
 public class Board extends JPanel implements KeyListener, MouseListener, MouseMotionListener {
 
     private int score = 0;
-    private String font = "GEORGIA";
+    private String font = "VERDANA";
 
     private static int FPS = 60;
     private static int delay = 1000 / FPS;
@@ -31,8 +31,9 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
 
     private int mouseX, mouseY;
 
-    private BufferedImage pause, refresh;
-    private Rectangle stopBounds, refreshBounds;
+    private BufferedImage pause, refresh, soundOnIcon, soundOffIcon;
+    private Rectangle stopBounds, refreshBounds, soundBounds;
+    private boolean soundEnabled = true;
 
     private Random random;
 
@@ -49,11 +50,14 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
         addMouseListener(this);
         addMouseMotionListener(this);
 
-        pause = ImageLoader.loadImage("/pause.png");
-        refresh = ImageLoader.loadImage("/refresh.png");
+        pause = ImageLoader.loadImage("/pause.png", 90 , 90 );
+        refresh = ImageLoader.loadImage("/refresh.png", 70, 70);
+        soundOnIcon = ImageLoader.loadImage("/soundOn.png", 70, 70);
+        soundOffIcon = ImageLoader.loadImage("/soundOff.png", 70, 70);
 
-        stopBounds = new Rectangle(350,500, pause.getWidth(), pause.getHeight() + pause.getHeight() / 2);
-        refreshBounds = new Rectangle(350, 500 - refresh.getHeight() - 20, refresh.getWidth(), refresh.getHeight() + refresh.getHeight() / 2);
+        stopBounds = new Rectangle(320, 490, pause.getWidth(), pause.getHeight());
+        refreshBounds = new Rectangle(330, 500 - refresh.getHeight() - 10 , refresh.getWidth(), refresh.getHeight());
+        soundBounds = new Rectangle(330, 310, 70, 70);
         random = new Random();
 
         shapes[0] = new Shape(new int[][]{ //shape l
@@ -161,6 +165,15 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
             g.drawImage(refresh, refreshBounds.x, refreshBounds.y, null);
         }
 
+        BufferedImage currentSoundIcon = soundEnabled ? soundOnIcon : soundOffIcon;
+
+        if (soundBounds.contains(mouseX, mouseY)) {
+            g.drawImage(currentSoundIcon.getScaledInstance(70, 70, BufferedImage.SCALE_SMOOTH),
+                    soundBounds.x + 3, soundBounds.y + 3, null);
+        } else {
+            g.drawImage(currentSoundIcon, soundBounds.x, soundBounds.y, null);
+        }
+
 
 
         // draw board block
@@ -216,7 +229,7 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
             String gamePausedString = "GAME PAUSED";
             g.setColor(Color.WHITE);
             g.setFont(new Font(font, Font.BOLD, 25));
-            g.drawString(gamePausedString, 35, WindowGame.HEIGHT / 2);
+            g.drawString(gamePausedString, 50, WindowGame.HEIGHT /2);
         }
         if (gameOver) {
             String gameOverString2 = "GAME OVER";
@@ -318,6 +331,9 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
         }
         if(refreshBounds.contains(mouseX,mouseY)) {
             startGame();
+        }
+        if (soundBounds.contains(mouseX, mouseY)) {
+            soundEnabled = !soundEnabled;
         }
     }
 
