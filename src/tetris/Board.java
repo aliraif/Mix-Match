@@ -15,6 +15,9 @@ import java.awt.image.BufferedImage;
 
 public class Board extends JPanel implements KeyListener, MouseListener, MouseMotionListener {
 
+    private BufferedImage menuIcon;
+    private Rectangle menuBounds;
+    private WindowGame windowGame;
     private int score = 0;
     private String font = "VERDANA";
 
@@ -46,8 +49,12 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
 
     private Shape currentShape, nextShape;
 
-    public Board() {
+    public Board(WindowGame windowGame) {
+        this.windowGame = windowGame;
+
+        setFocusable(true);
         addMouseListener(this);
+        addKeyListener(this);
         addMouseMotionListener(this);
 
         pause = ImageLoader.loadImage("/pause.png", 90 , 90 );
@@ -55,9 +62,21 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
         soundOnIcon = ImageLoader.loadImage("/soundOn.png", 70, 70);
         soundOffIcon = ImageLoader.loadImage("/soundOff.png", 70, 70);
 
+        // menu button icon
+        menuIcon = new BufferedImage(70, 70, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2d = menuIcon.createGraphics();
+        g2d.setColor(new Color(80, 80, 180));
+        g2d.fillRect(0, 0, 70, 70);
+        g2d.setColor(Color.WHITE);
+        g2d.drawRect(0, 0, 69, 69);
+        g2d.setFont(new Font("VERDANA", Font.BOLD, 14));
+        g2d.drawString("MENU", 12, 40);
+        g2d.dispose();
+
         stopBounds = new Rectangle(320, 490, pause.getWidth(), pause.getHeight());
         refreshBounds = new Rectangle(330, 500 - refresh.getHeight() - 10 , refresh.getWidth(), refresh.getHeight());
         soundBounds = new Rectangle(330, 310, 70, 70);
+        menuBounds = new Rectangle(330,370,70,70);
         random = new Random();
 
         shapes[0] = new Shape(new int[][]{ //shape l
@@ -172,6 +191,14 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
                     soundBounds.x + 3, soundBounds.y + 3, null);
         } else {
             g.drawImage(currentSoundIcon, soundBounds.x, soundBounds.y, null);
+        }
+
+        // draw menu button
+        if (menuBounds.contains(mouseX, mouseY)) {
+            g.drawImage(menuIcon.getScaledInstance(73, 73, BufferedImage.SCALE_SMOOTH),
+                    menuBounds.x - 2, menuBounds.y - 2, null);
+        } else {
+            g.drawImage(menuIcon, menuBounds.x, menuBounds.y, null);
         }
 
 
@@ -334,6 +361,9 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
         }
         if (soundBounds.contains(mouseX, mouseY)) {
             soundEnabled = !soundEnabled;
+        }
+        if (menuBounds.contains(mouseX, mouseY)) {
+            windowGame.returnToMenu();
         }
     }
 

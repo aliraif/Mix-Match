@@ -6,7 +6,7 @@ public class WindowGame {
     public static final int WIDTH = 445, HEIGHT = 629;
 
     private Board board;
-    //private Title title;
+    private MainMenu mainMenu;
     private JFrame window;
 
     public WindowGame() {
@@ -17,26 +17,44 @@ public class WindowGame {
         window.setLocationRelativeTo(null);
         window.setResizable(false);
 
-        board = new Board();
+        board = new Board(this);
+        mainMenu = new MainMenu(this);
         //title = new Title(this);
 
-        window.addKeyListener(board);
-       // window.addKeyListener(title);
-
-       // window.add(title);
-
+        window.add(mainMenu);
+        window.addKeyListener(mainMenu);
         window.setVisible(true);
     }
 
     public void startTetris() {
-       // window.remove(title);
-        window.addMouseMotionListener(board);
-        window.addMouseListener(board);
+        window.remove(mainMenu);
+        window.removeKeyListener(mainMenu);
+
         window.add(board);
-        board.startGame();
-        window.revalidate();
+        window.addKeyListener(board);
         window.addMouseMotionListener(board);
         window.addMouseListener(board);
+
+        window.revalidate();
+        window.repaint();
+
+        board.requestFocusInWindow();
+        board.startGame();
+    }
+
+    public void returnToMenu() {
+        window.remove(board);
+        window.removeKeyListener(board);
+        window.removeMouseMotionListener(board);
+        window.removeMouseListener(board);
+
+        window.add(mainMenu);
+        window.addKeyListener(mainMenu);
+
+        board.stopGame();
+        mainMenu.requestFocusInWindow();
+        window.revalidate();
+        window.repaint();
     }
 
     public static void main(String[] args) {
