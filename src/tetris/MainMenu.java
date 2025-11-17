@@ -19,6 +19,8 @@ public class MainMenu extends JPanel implements MouseListener, MouseMotionListen
     private String font = "VERDANA";
     private static FileManager fileManager;
     private static Font fontRegular;
+    private static Font fontBig;
+    private static Font fontbig;
 
     public MainMenu(WindowGame windowGame) {
         this.windowGame = windowGame;
@@ -30,6 +32,8 @@ public class MainMenu extends JPanel implements MouseListener, MouseMotionListen
         fileManager = WindowGame.getFileManager();
         try{
             fontRegular = fileManager.loadFont(14f);
+            fontBig = fileManager.loadFont(41f);
+            fontbig = fileManager.loadFont(30f);
         }catch(Exception e){
             e.printStackTrace();
         }
@@ -64,7 +68,7 @@ public class MainMenu extends JPanel implements MouseListener, MouseMotionListen
 
         // Title with modern styling
         g2d.setColor(new Color(255, 255, 255, 230));
-        g2d.setFont(fontRegular);
+        g2d.setFont(fontBig);
         String title = "TETRIS";
         FontMetrics fm = g2d.getFontMetrics();
         int titleX = (WindowGame.WIDTH - fm.stringWidth(title)) / 2;
@@ -139,7 +143,7 @@ public class MainMenu extends JPanel implements MouseListener, MouseMotionListen
         g2d.drawRoundRect(rect.x, rect.y, rect.width, rect.height, 15, 15);
 
         // Button text with shadow
-        g2d.setFont(fontRegular);
+        g2d.setFont(fontbig);
         FontMetrics fm = g2d.getFontMetrics();
         int textX = rect.x + (rect.width - fm.stringWidth(text)) / 2;
         int textY = rect.y + ((rect.height - fm.getHeight()) / 2) + fm.getAscent();

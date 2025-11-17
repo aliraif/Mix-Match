@@ -21,8 +21,6 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
     private Rectangle menuBounds;
     private WindowGame windowGame;
     private int score = 0;
-    private String font = "VERDANA";
-
 
     private static int FPS = 60;
     private static int delay = 1000 / FPS;
@@ -78,7 +76,7 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
 
         fileManager = WindowGame.getFileManager();
         try{
-            fontRegular = fileManager.loadFont(14f);
+            fontRegular = fileManager.loadFont(24f);
         }catch(Exception e){
             e.printStackTrace();
         }
