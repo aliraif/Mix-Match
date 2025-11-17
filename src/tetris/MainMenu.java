@@ -17,6 +17,8 @@ public class MainMenu extends JPanel implements MouseListener, MouseMotionListen
     private Rectangle exitButton;
 
     private String font = "VERDANA";
+    private static FileManager fileManager;
+    private static Font fontRegular;
 
     public MainMenu(WindowGame windowGame) {
         this.windowGame = windowGame;
@@ -24,6 +26,14 @@ public class MainMenu extends JPanel implements MouseListener, MouseMotionListen
         addMouseMotionListener(this);
         addKeyListener(this);
         setFocusable(true);
+
+        fileManager = WindowGame.getFileManager();
+        try{
+            fontRegular = fileManager.loadFont(14f);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+
 
         // Initialize button bounds
         playButton = new Rectangle(WindowGame.WIDTH / 2 - 120, 270, 240, 70);
@@ -54,7 +64,7 @@ public class MainMenu extends JPanel implements MouseListener, MouseMotionListen
 
         // Title with modern styling
         g2d.setColor(new Color(255, 255, 255, 230));
-        g2d.setFont(new Font("Arial", Font.BOLD, 72));
+        g2d.setFont(fontRegular);
         String title = "TETRIS";
         FontMetrics fm = g2d.getFontMetrics();
         int titleX = (WindowGame.WIDTH - fm.stringWidth(title)) / 2;
@@ -62,7 +72,7 @@ public class MainMenu extends JPanel implements MouseListener, MouseMotionListen
 
         // Subtitle
         g2d.setColor(new Color(200, 200, 255, 180));
-        g2d.setFont(new Font("Arial", Font.PLAIN, 16));
+        g2d.setFont(fontRegular);
         String subtitle = "A TIMELESS PUZZLE EXPERIENCE";
         fm = g2d.getFontMetrics();
         int subtitleX = (WindowGame.WIDTH - fm.stringWidth(subtitle)) / 2;
@@ -70,12 +80,15 @@ public class MainMenu extends JPanel implements MouseListener, MouseMotionListen
 
         // Thin line under title
         g2d.setColor(new Color(138, 43, 226, 150));
+        g2d.setFont(fontRegular);
         g2d.setStroke(new BasicStroke(2));
         g2d.drawLine(WindowGame.WIDTH / 2 - 100, 190, WindowGame.WIDTH / 2 + 100, 190);
 
         // Play Button - Glass morphism style
+        g2d.setFont(fontRegular);
         drawGlassButton(g2d, playButton, "PLAY", playButton.contains(mouseX, mouseY),
                 new Color(100, 200, 255, 80), new Color(100, 200, 255, 150));
+
 
         // Exit Button - Glass morphism style
         drawGlassButton(g2d, exitButton, "EXIT", exitButton.contains(mouseX, mouseY),
@@ -93,14 +106,14 @@ public class MainMenu extends JPanel implements MouseListener, MouseMotionListen
 
         // Instructions text
         g2d.setColor(new Color(255, 255, 255, 220));
-        g2d.setFont(new Font("Arial", Font.BOLD, 14));
+        g2d.setFont(fontRegular);
         g2d.drawString("CONTROLS", 175, instrY + 25);
 
         g2d.setColor(new Color(220, 220, 255, 200));
-        g2d.setFont(new Font("Arial", Font.PLAIN, 12));
-        g2d.drawString("← → / A D    Move Left/Right", 90, instrY + 50);
-        g2d.drawString("↓ / S          Speed Up", 90, instrY + 70);
-        g2d.drawString("↑ / W         Rotate Block", 90, instrY + 90);
+        g2d.setFont(fontRegular);
+        g2d.drawString("A D   Move Left/Right", 90, instrY + 50);
+        g2d.drawString("S      Speed Up", 90, instrY + 70);
+        g2d.drawString("W      Rotate Block", 90, instrY + 90);
     }
 
     private void drawGlassButton(Graphics2D g2d, Rectangle rect, String text, boolean isHovered, Color baseColor, Color hoverColor) {
@@ -126,7 +139,7 @@ public class MainMenu extends JPanel implements MouseListener, MouseMotionListen
         g2d.drawRoundRect(rect.x, rect.y, rect.width, rect.height, 15, 15);
 
         // Button text with shadow
-        g2d.setFont(new Font("Arial", Font.BOLD, 28));
+        g2d.setFont(fontRegular);
         FontMetrics fm = g2d.getFontMetrics();
         int textX = rect.x + (rect.width - fm.stringWidth(text)) / 2;
         int textY = rect.y + ((rect.height - fm.getHeight()) / 2) + fm.getAscent();

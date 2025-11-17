@@ -3,6 +3,8 @@ package tetris;
 import javax.swing.JFrame;
 import audio.SoundManager;
 
+import java.util.logging.Logger;
+
 public class WindowGame {
     public static final int WIDTH = 445, HEIGHT = 629;
 
@@ -63,6 +65,10 @@ public class WindowGame {
         SoundManager.stopAll();
         SoundManager.playLoop("sfx/HoldOnTight.wav");
         //SoundManager.playLoop("sfx/Tetris.wav");
+    }
+
+    public static FileManager getFileManager() {
+        return FileManager.getInstance();
     }
 
 }

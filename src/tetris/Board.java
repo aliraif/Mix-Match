@@ -16,11 +16,13 @@ import audio.SoundManager;
 
 public class Board extends JPanel implements KeyListener, MouseListener, MouseMotionListener {
 
+
     private BufferedImage menuIcon;
     private Rectangle menuBounds;
     private WindowGame windowGame;
     private int score = 0;
     private String font = "VERDANA";
+
 
     private static int FPS = 60;
     private static int delay = 1000 / FPS;
@@ -40,6 +42,10 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
     private boolean soundEnabled = true;
 
     private Random random;
+
+    private static Font fontRegular;
+    private static FileManager fileManager;
+
 
     //Array of Colors
     private Color[] colors = {Color.decode("#ed1c24"),Color.decode("#ff7f27"),Color.decode("#fff200"),
@@ -69,6 +75,13 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
         soundBounds = new Rectangle(330, 310, 70, 70);
         menuBounds = new Rectangle(330,370,70,70);
         random = new Random();
+
+        fileManager = WindowGame.getFileManager();
+        try{
+            fontRegular = fileManager.loadFont(14f);
+        }catch(Exception e){
+            e.printStackTrace();
+        }
 
         shapes[0] = new Shape(new int[][]{ //shape l
                 {1,1,1,1}
@@ -239,20 +252,20 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
         g.drawRect(0, 0, BOARD_WIDTH * BLOCK_SIZE, BOARD_HEIGHT * BLOCK_SIZE);
 
         //draw the score
-        g.setFont(new Font(font, Font.BOLD, 25));
+        g.setFont(fontRegular);
         g.drawString("SCORE", WindowGame.WIDTH - 125, WindowGame.HEIGHT - 600 );
         g.drawString(score + "", WindowGame.WIDTH - 90, WindowGame.HEIGHT - 570);
 
         if (gamePaused) {
             String gamePausedString = "GAME PAUSED";
             g.setColor(Color.WHITE);
-            g.setFont(new Font(font, Font.BOLD, 25));
+            g.setFont(fontRegular);
             g.drawString(gamePausedString, 50, WindowGame.HEIGHT /2);
         }
         if (gameOver) {
             String gameOverString2 = "GAME OVER";
             g.setColor(Color.magenta);
-            g.setFont(new Font(font, Font.BOLD, 30));
+            g.setFont(fontRegular);
             g.drawString(gameOverString2, 50, WindowGame.HEIGHT / 2);
         }
     }
@@ -379,6 +392,7 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
     @Override
     public void mouseExited(MouseEvent e) {
     }
+
 
 
 }
