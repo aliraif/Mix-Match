@@ -12,6 +12,7 @@ import java.util.Random;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 import java.awt.image.BufferedImage;
+import audio.SoundManager;
 
 public class Board extends JPanel implements KeyListener, MouseListener, MouseMotionListener {
 
@@ -361,6 +362,12 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
         }
         if (soundBounds.contains(mouseX, mouseY)) {
             soundEnabled = !soundEnabled;
+            if (soundEnabled){
+                SoundManager.stopAll();
+                SoundManager.playLoop("sfx/Tetris.wav");
+            }else{
+                SoundManager.stop("sfx/Tetris.wav");
+            }
         }
         if (menuBounds.contains(mouseX, mouseY)) {
             windowGame.returnToMenu();
