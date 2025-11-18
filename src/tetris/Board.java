@@ -14,6 +14,8 @@ import javax.swing.Timer;
 import java.awt.image.BufferedImage;
 import audio.SoundManager;
 
+
+
 public class Board extends JPanel implements KeyListener, MouseListener, MouseMotionListener {
 
 
@@ -42,6 +44,7 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
     private Random random;
 
     private static Font fontRegular;
+    private static Font fontBig;
     private static FileManager fileManager;
 
 
@@ -64,8 +67,8 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
 
         pause = ImageLoader.loadImage("/pause.png", 60 , 60 );
         refresh = ImageLoader.loadImage("/refresh.png", 60, 60);
-        //soundOnIcon = ImageLoader.loadImage("/soundOn.png", 60, 60);
-        //soundOffIcon = ImageLoader.loadImage("/soundOff.png", 60, 60);
+        soundOnIcon = ImageLoader.loadImage("/soundOn.png", 60, 60);
+        soundOffIcon = ImageLoader.loadImage("/soundOff.png", 60, 60);
         menuIcon = ImageLoader.loadImage("/menu.png", 60, 60);
 
         stopBounds = new Rectangle(330, 490, pause.getWidth(), pause.getHeight());
@@ -77,6 +80,7 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
         fileManager = WindowGame.getFileManager();
         try{
             fontRegular = fileManager.loadFont(24f);
+            fontBig = fileManager.loadFont(32f);
         }catch(Exception e){
             e.printStackTrace();
         }
@@ -262,8 +266,8 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
         }
         if (gameOver) {
             String gameOverString2 = "GAME OVER";
-            g.setColor(Color.magenta);
-            g.setFont(fontRegular);
+            g.setColor(Color.WHITE);
+            g.setFont(fontBig);
             g.drawString(gameOverString2, 50, WindowGame.HEIGHT / 2);
         }
     }
