@@ -23,6 +23,7 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
     private Rectangle menuBounds;
     private WindowGame windowGame;
     private int score = 0;
+    private String gameMode = GameMode.CLASSIC;
 
     private static int FPS = 60;
     private static int delay = 1000 / FPS;
@@ -323,7 +324,8 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
         this.score += score;
     }
 
-    public void startGame() {
+    public void startGame(String mode) {
+        this.gameMode = mode;
         stopGame();
         setNextShape();
         setCurrentShape();
@@ -363,7 +365,7 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
             gamePaused = !gamePaused;
         }
         if(refreshBounds.contains(mouseX,mouseY)) {
-            startGame();
+            startGame(gameMode);
         }
         if (soundBounds.contains(mouseX, mouseY)) {
             soundEnabled = !soundEnabled;

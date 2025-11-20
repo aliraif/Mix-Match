@@ -11,6 +11,7 @@ public class WindowGame {
     private Board board;
     private MainMenu mainMenu;
     private JFrame window;
+    private String currentGameMode = GameMode.CLASSIC;
 
     public WindowGame() {
 
@@ -29,7 +30,9 @@ public class WindowGame {
         window.setVisible(true);
     }
 
-    public void startTetris() {
+    public void startTetris(String mode) {
+        this.currentGameMode = mode;
+
         window.remove(mainMenu);
         window.removeKeyListener(mainMenu);
 
@@ -42,7 +45,7 @@ public class WindowGame {
         window.repaint();
 
         board.requestFocusInWindow();
-        board.startGame();
+        board.startGame(mode);
     }
 
     public void returnToMenu() {
@@ -58,6 +61,10 @@ public class WindowGame {
         mainMenu.requestFocusInWindow();
         window.revalidate();
         window.repaint();
+    }
+
+    public String getCurrentGameMode() {
+        return currentGameMode;
     }
 
     public static void main(String[] args) {

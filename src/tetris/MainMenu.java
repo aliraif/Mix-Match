@@ -18,6 +18,18 @@ public class MainMenu extends JPanel implements MouseListener, MouseMotionListen
     private Rectangle playButton;
     private Rectangle exitButton;
 
+    private Rectangle gameModeButton;
+
+    // Game mode selection buttons
+    private Rectangle classicModeButton;
+    private Rectangle careerModeButton;
+    private Rectangle endlessModeButton;
+    private Rectangle backButton;
+
+    // Track which screen we're on
+    private boolean showingModeSelection = false;
+    private String selectedMode = GameMode.CLASSIC;
+
     private static FileManager fileManager;
     private static Font fontRegular;
     private static Font fontBig;
@@ -43,8 +55,15 @@ public class MainMenu extends JPanel implements MouseListener, MouseMotionListen
         }
 
         // Initialize button bounds
-        playButton = new Rectangle(WindowGame.WIDTH / 2 - 100, 250, 200, 70);
-        exitButton = new Rectangle(WindowGame.WIDTH / 2 - 100, 285, 200, 70);
+        playButton = new Rectangle(WindowGame.WIDTH / 2 - 100, 210, 200, 45);
+        gameModeButton = new Rectangle(WindowGame.WIDTH / 2 - 100, 250, 200, 45);
+        exitButton = new Rectangle(WindowGame.WIDTH / 2 - 100, 290, 200, 45);
+
+        // Initialize game mode selection button bounds
+        classicModeButton = new Rectangle(WindowGame.WIDTH / 2 - 150, 200, 300, 60);
+        careerModeButton = new Rectangle(WindowGame.WIDTH / 2 - 150, 270, 300, 60);
+        endlessModeButton = new Rectangle(WindowGame.WIDTH / 2 - 150, 340, 300, 60);
+        backButton = new Rectangle(WindowGame.WIDTH / 2 - 100, 480, 200, 50);
 
 
         // Initialize floating blocks
@@ -86,7 +105,6 @@ public class MainMenu extends JPanel implements MouseListener, MouseMotionListen
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         // Dark background
-        g2d.setColor(new Color(40, 40, 40));
         g2d.setColor(Color.black);
         g2d.fillRect(0, 0, getWidth(), getHeight());
 
@@ -95,70 +113,11 @@ public class MainMenu extends JPanel implements MouseListener, MouseMotionListen
             block.draw(g2d);
         }
 
-        // Draw title with gradient and chromatic effect
-        drawChromaticTitle(g2d);
-
-        // Subtitle
-        g2d.setColor(new Color(255, 100, 200));
-        g2d.setFont(fontbig);
-        String subtitle = "CLASSIC BOARD GAME";
-        FontMetrics fm = g2d.getFontMetrics();
-        int subtitleX = (WindowGame.WIDTH - fm.stringWidth(subtitle)) / 2;
-        g2d.drawString(subtitle, subtitleX, 230);
-
-        // Play Button with chromatic effect
-        drawChromaticButton(g2d, playButton, "PLAY", playButton.contains(mouseX, mouseY));
-
-        // Exit Button with chromatic effect
-        drawChromaticButton(g2d, exitButton, "EXIT", exitButton.contains(mouseX, mouseY));
-
-        //Instructions section with glass effect
-        int instrY = 410;
-        g2d.setColor(new Color(255, 255, 255, 40));
-        g2d.fillRoundRect(40, instrY, 365, 150, 20, 20);
-
-        // Glass border
-        g2d.setColor(new Color(255, 255, 255, 80));
-        g2d.setStroke(new BasicStroke(1.5f));
-        g2d.drawRoundRect(40, instrY, 365, 150, 20, 20);
-
-        // Instructions header
-        g2d.setColor(new Color(255, 255, 255, 240));
-        g2d.setFont(fontBig);
-        String howToPlay = "HOW TO PLAY";
-        fm = g2d.getFontMetrics();
-        int headerX = (WindowGame.WIDTH - fm.stringWidth(howToPlay)) / 2;
-        g2d.drawString(howToPlay, headerX, instrY + 25);
-
-        // Divider line
-        g2d.setColor(new Color(138, 43, 226, 100));
-        g2d.setStroke(new BasicStroke(1.5f));
-        g2d.drawLine(80, instrY + 35, WindowGame.WIDTH - 80, instrY + 35);
-
-        // Game objective
-        g2d.setColor(new Color(200, 220, 255, 220));
-        g2d.setFont(fontBig);
-        g2d.drawString("Stack falling blocks to complete lines", 60, instrY + 50);
-
-        // Controls section
-        g2d.setColor(new Color(255, 255, 255, 220));
-        g2d.setFont(fontBig);
-        g2d.drawString("CONTROLS:", 60, instrY + 73);
-
-        g2d.setColor(new Color(220, 220, 255, 200));
-        g2d.setFont(fontBig);
-        g2d.drawString("A / D -  Move Left/Right", 75, instrY + 93);
-        g2d.drawString("W -  Rotate Block", 75, instrY + 111);
-        g2d.drawString("S -  Speed Up Drop", 75, instrY + 128);
-
-        // Additional tip
-        g2d.setColor(new Color(255, 200, 100, 180));
-        g2d.setFont(fontBig);
-        String tip = "TIP: Complete lines to score points!";
-        fm = g2d.getFontMetrics();
-        int tipX = (WindowGame.WIDTH - fm.stringWidth(tip)) / 2;
-        g2d.drawString(tip, tipX, instrY + 145);
-
+        if (showingModeSelection) {
+            drawModeSelection(g2d);
+        } else {
+            drawMainMenu(g2d);
+        }
     }
 
     private void drawChromaticTitle(Graphics2D g2d) {
@@ -166,7 +125,7 @@ public class MainMenu extends JPanel implements MouseListener, MouseMotionListen
         g2d.setFont(fontRegular);
         FontMetrics fm = g2d.getFontMetrics();
         int titleX = (WindowGame.WIDTH - fm.stringWidth(title)) / 2;
-        int titleY = 160;
+        int titleY = 120;
 
         // Chromatic aberration effect - cyan shadow
         g2d.setColor(new Color(0, 255, 255, 100));
@@ -294,17 +253,202 @@ public class MainMenu extends JPanel implements MouseListener, MouseMotionListen
         }
     }
 
+    private void drawMainMenu(Graphics2D g2d) {
+        // Draw title with gradient and chromatic effect
+        drawChromaticTitle(g2d);
+
+        // Subtitle
+        g2d.setColor(new Color(255, 100, 200));
+        g2d.setFont(fontbig);
+        String subtitle = "CLASSIC BOARD GAME";
+        FontMetrics fm = g2d.getFontMetrics();
+        int subtitleX = (WindowGame.WIDTH - fm.stringWidth(subtitle)) / 2;
+        g2d.drawString(subtitle, subtitleX, 190);
+
+        // Play Button
+        drawChromaticButton(g2d, playButton, "PLAY", playButton.contains(mouseX, mouseY));
+
+        // Game Mode Button (NEW)
+        drawChromaticButton(g2d, gameModeButton, "GAME MODE", gameModeButton.contains(mouseX, mouseY));
+
+        // Exit Button
+        drawChromaticButton(g2d, exitButton, "EXIT", exitButton.contains(mouseX, mouseY));
+
+        // Current mode indicator
+        g2d.setColor(new Color(255, 255, 255, 150));
+        g2d.setFont(fontBig);
+        String modeText = "Current Mode: " + GameMode.getDisplayName(selectedMode);
+        fm = g2d.getFontMetrics();
+        int modeX = (WindowGame.WIDTH - fm.stringWidth(modeText)) / 2;
+        g2d.drawString(modeText, modeX, 370);
+
+        // Instructions section with glass effect (moved up and much bigger)
+        int instrY = 380;
+        g2d.setColor(new Color(255, 255, 255, 40));
+        g2d.fillRoundRect(40, instrY, 365, 180, 20, 20);
+
+        // Glass border
+        g2d.setColor(new Color(255, 255, 255, 80));
+        g2d.setStroke(new BasicStroke(1.5f));
+        g2d.drawRoundRect(40, instrY, 365, 180, 20, 20);
+
+        // Instructions header
+        g2d.setColor(new Color(255, 255, 255, 240));
+        g2d.setFont(fontBig);
+        String howToPlay = "HOW TO PLAY";
+        fm = g2d.getFontMetrics();
+        int headerX = (WindowGame.WIDTH - fm.stringWidth(howToPlay)) / 2;
+        g2d.drawString(howToPlay, headerX, instrY + 25);
+
+        // Divider line
+        g2d.setColor(new Color(138, 43, 226, 100));
+        g2d.setStroke(new BasicStroke(1.5f));
+        g2d.drawLine(80, instrY + 35, WindowGame.WIDTH - 80, instrY + 35);
+
+        // Game objective
+        g2d.setColor(new Color(200, 220, 255, 220));
+        g2d.setFont(fontBig);
+        g2d.drawString("Stack falling blocks to complete lines", 60, instrY + 50);
+
+        // Controls section
+        g2d.setColor(new Color(255, 255, 255, 220));
+        g2d.setFont(fontBig);
+        g2d.drawString("CONTROLS:", 60, instrY + 75);
+
+        g2d.setColor(new Color(220, 220, 255, 200));
+        g2d.setFont(fontBig);
+        g2d.drawString("A / D -  Move Left/Right", 75, instrY + 100);
+        g2d.drawString("W -  Rotate Block", 75, instrY + 120);
+        g2d.drawString("S -  Speed Up Drop", 75, instrY + 140);
+
+        // Additional tip
+        g2d.setColor(new Color(255, 200, 100, 180));
+        g2d.setFont(fontBig);
+        String tip = "TIP: Complete lines to score points!";
+        fm = g2d.getFontMetrics();
+        int tipX = (WindowGame.WIDTH - fm.stringWidth(tip)) / 2;
+        g2d.drawString(tip, tipX, instrY + 170);
+    }
+
+    private void drawModeSelection(Graphics2D g2d) {
+        // Title
+        String title = "SELECT GAME MODE";
+        g2d.setFont(fontRegular);
+        FontMetrics fm = g2d.getFontMetrics();
+        int titleX = (WindowGame.WIDTH - fm.stringWidth(title)) / 2;
+
+        // Chromatic title effect
+        g2d.setColor(new Color(0, 255, 255, 100));
+        g2d.drawString(title, titleX - 2, 148);
+        g2d.setColor(new Color(255, 0, 255, 100));
+        g2d.drawString(title, titleX + 2, 152);
+
+        GradientPaint titleGradient = new GradientPaint(
+                titleX, 110, new Color(138, 43, 226),
+                titleX, 160, new Color(255, 0, 200)
+        );
+        g2d.setPaint(titleGradient);
+        g2d.drawString(title, titleX, 150);
+
+        // Classic Mode Button
+        drawModeButton(g2d, classicModeButton, GameMode.CLASSIC,
+                classicModeButton.contains(mouseX, mouseY));
+
+        // Career Mode Button
+        drawModeButton(g2d, careerModeButton, GameMode.CAREER,
+                careerModeButton.contains(mouseX, mouseY));
+
+        // Endless Mode Button
+        drawModeButton(g2d, endlessModeButton, GameMode.ENDLESS,
+                endlessModeButton.contains(mouseX, mouseY));
+
+        // Back Button
+        drawChromaticButton(g2d, backButton, "BACK", backButton.contains(mouseX, mouseY));
+    }
+
+    private void drawModeButton(Graphics2D g2d, Rectangle rect, String mode, boolean isHovered) {
+        // Button background with glow effect
+        if (mode.equals(selectedMode)) {
+            // Highlight selected mode
+            g2d.setColor(new Color(138, 43, 226, 100));
+            g2d.fillRoundRect(rect.x - 2, rect.y - 2, rect.width + 4, rect.height + 4, 15, 15);
+        }
+
+        if (isHovered) {
+            g2d.setColor(new Color(255, 255, 255, 60));
+        } else {
+            g2d.setColor(new Color(255, 255, 255, 30));
+        }
+        g2d.fillRoundRect(rect.x, rect.y, rect.width, rect.height, 15, 15);
+
+        // Border
+        if (mode.equals(selectedMode)) {
+            g2d.setColor(new Color(138, 43, 226, 200));
+        } else {
+            g2d.setColor(new Color(255, 255, 255, 100));
+        }
+        g2d.setStroke(new BasicStroke(2f));
+        g2d.drawRoundRect(rect.x, rect.y, rect.width, rect.height, 15, 15);
+
+        // Mode name
+        g2d.setFont(fontbig);
+        FontMetrics fm = g2d.getFontMetrics();
+        String name = GameMode.getDisplayName(mode);
+        int nameX = rect.x + (rect.width - fm.stringWidth(name)) / 2;
+        int nameY = rect.y + 30;
+
+        if (isHovered) {
+            // Chromatic effect on hover
+            g2d.setColor(new Color(0, 255, 255, 150));
+            g2d.drawString(name, nameX - 1, nameY - 1);
+            g2d.setColor(new Color(255, 0, 255, 150));
+            g2d.drawString(name, nameX + 1, nameY + 1);
+        }
+
+        g2d.setColor(Color.WHITE);
+        g2d.drawString(name, nameX, nameY);
+
+        // Description
+        g2d.setFont(fontBig);
+        g2d.setColor(new Color(200, 200, 255, 200));
+        String desc = GameMode.getDescription(mode);
+        fm = g2d.getFontMetrics();
+        int descX = rect.x + (rect.width - fm.stringWidth(desc)) / 2;
+        g2d.drawString(desc, descX, rect.y + 50);
+
+        // Selected checkmark
+        if (mode.equals(selectedMode)) {
+            g2d.setColor(new Color(0, 255, 100));
+            g2d.setFont(fontbig);
+            g2d.drawString("✓", rect.x + 15, rect.y + 30);
+        }
+    }
+
     @Override
     public void mouseClicked(MouseEvent e) {
         mouseX = e.getX();
         mouseY = e.getY();
 
-        if (playButton.contains(mouseX, mouseY)) {
-            windowGame.startTetris();
-        }
-
-        if (exitButton.contains(mouseX, mouseY)) {
-            System.exit(0);
+        if (showingModeSelection) {
+            // Handle mode selection screen clicks
+            if (classicModeButton.contains(mouseX, mouseY)) {
+                selectedMode = GameMode.CLASSIC;
+            } else if (careerModeButton.contains(mouseX, mouseY)) {
+                selectedMode = GameMode.CAREER;
+            } else if (endlessModeButton.contains(mouseX, mouseY)) {
+                selectedMode = GameMode.ENDLESS;
+            } else if (backButton.contains(mouseX, mouseY)) {
+                showingModeSelection = false;
+            }
+        } else {
+            // Handle main menu clicks
+            if (playButton.contains(mouseX, mouseY)) {
+                windowGame.startTetris(selectedMode);
+            } else if (gameModeButton.contains(mouseX, mouseY)) {
+                showingModeSelection = true;
+            } else if (exitButton.contains(mouseX, mouseY)) {
+                System.exit(0);
+            }
         }
     }
 
@@ -338,14 +482,24 @@ public class MainMenu extends JPanel implements MouseListener, MouseMotionListen
 
     @Override
     public void keyPressed(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-            windowGame.startTetris();
-        }
-        if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-            System.exit(0);
+        if (showingModeSelection) {
+            if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                showingModeSelection = false;
+            }
+        } else {
+            if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+                windowGame.startTetris(selectedMode);
+            }
+            if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                System.exit(0);
+            }
         }
     }
 
     @Override
     public void keyReleased(KeyEvent e) {}
+
+    public String getSelectedMode() {
+        return selectedMode;
+    }
 }
