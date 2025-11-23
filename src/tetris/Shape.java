@@ -105,8 +105,74 @@ public class Shape {
         }
     }
 
+    public void updateWithSpeed(int customSpeed) {
+        if(collision) {
+            // fill the color for board
+            for(int row = 0; row < coords.length;row++){
+                for(int col = 0 ; col < coords[0].length;col++){
+                    if (coords[row][col] != 0){
+                        board.getBoard()[y + row][x + col] = color;
+                    }
+                }
+            }
+            checkLine();
+            board.addScore(1);
+            // set current shape
+            board.setCurrentShape();
+
+            return;
+        }
+
+        // check moving horizontal
+        boolean moveX = true;
+        if(!(x + deltaX + coords[0].length > 10) && !(x + deltaX < 0)) {
+            // horizontal collision logic
+            for(int row =0; row < coords.length; row++){
+                for(int col = 0;col < coords[row].length; col++ ){
+                    if(coords[row][col]!= 0) {
+                        if (board.getBoard()[y + row][x + deltaX + col] != null) {
+                            moveX = false;
+                        }
+                    }
+                }
+            }
+            if(moveX) {
+                x += deltaX;
+            }
+        }
+        deltaX = 0;
+
+        // Use delayTimeForMovement which changes with speedUp/speedDown
+        int currentDelay = (delayTimeForMovement == fast) ? fast : customSpeed;
+
+        if(System.currentTimeMillis() - beginTime > currentDelay) {
+            // vertical movement
+            if(!(y + 1 + coords.length > BOARD_HEIGHT)) {
+                // vertical collision logic
+                for(int row =0; row < coords.length;row++){
+                    for(int col = 0;col < coords[row].length; col++ ){
+                        if(coords[row][col]!= 0){
+                            if(board.getBoard()[y+1+row][x+deltaX+col] != null){
+                                collision = true;
+                            }
+                        }
+                    }
+                }
+                if(!collision){
+                    y++;
+                }
+
+            } else {
+                collision = true;
+            }
+            beginTime = System.currentTimeMillis();
+        }
+    }
+
     private void checkLine() {
         int bottomLine = board.getBoard().length - 1;
+        int linesCleared = 0;
+
         for(int topLine = board.getBoard().length - 1; topLine > 0; topLine --) {
             int count = 0;
             for (int col = 0; col < board.getBoard()[0].length; col++) {
@@ -118,11 +184,16 @@ public class Shape {
             //check if line clear to add 10 score
             if (count == board.getBoard()[0].length) {
                 board.addScore(10);
+                linesCleared++;
             }
             if(count < board.getBoard() [0].length) {
                 bottomLine--;
-
             }
+        }
+
+        // Notify board of lines cleared
+        if (linesCleared > 0) {
+            board.onLinesCleared(linesCleared);
         }
     }
 
@@ -202,5 +273,9 @@ public class Shape {
     public int getY() {return y; }
 
     public int getX() {return x; }
+
+    public Color getColor() {
+        return color;
+    }
 
 }
