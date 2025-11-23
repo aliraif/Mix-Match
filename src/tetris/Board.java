@@ -23,7 +23,13 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
     private String gameMode = GameMode.CLASSIC;
     // Separate state for each game mode
     private int classicScore = 0;
+    private int classicHighScore = 0;
+    private int classicLinesCleared = 0;
+    private boolean classicNewHighScore = false;
+    private boolean showingClassicGameOver = false;
+    private boolean showingCareerGameOver = false;
     private int endlessScore = 0;
+    private int careerScore = 0;
     private Color[][] classicBoard = new Color[BOARD_HEIGHT][BOARD_WIDTH];
     private Color[][] endlessBoard = new Color[BOARD_HEIGHT][BOARD_WIDTH];
     private Color[][] careerBoard = new Color[BOARD_HEIGHT][BOARD_WIDTH];
@@ -31,6 +37,9 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
     private CareerModeManager careerManager;
     private boolean showingLevelComplete = false;
     private boolean showingCareerComplete = false;
+
+    private EndlessModeManager endlessManager;
+    private boolean showingEndlessGameOver = false;
 
     private static int FPS = 60;
     private static int delay = 1000 / FPS;
@@ -58,6 +67,11 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
     private Color endlessShapeColor = null;
     private int endlessShapeX = 0;
     private int endlessShapeY = 0;
+
+    // Save endless mode timer state
+    private long endlessStartTime = 0;
+    private long endlessTotalPausedDuration = 0;
+    private int endlessLinesCleared = 0;
 
     private int[][] careerShapeCoords = null;
     private Color careerShapeColor = null;
@@ -108,6 +122,8 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
 
         fileManager = WindowGame.getFileManager();
         careerManager = new CareerModeManager();
+        endlessManager = new EndlessModeManager();
+
         // Initialize separate boards for each mode
         for (int row = 0; row < BOARD_HEIGHT; row++) {
             for (int col = 0; col < BOARD_WIDTH; col++) {
@@ -181,13 +197,15 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
     }
 
     private void update() {
-        if(gameOver || gamePaused || showingLevelComplete || showingCareerComplete) {
+        if(gameOver || gamePaused || showingLevelComplete || showingCareerComplete || showingEndlessGameOver || showingClassicGameOver || showingCareerGameOver) {
             return;
         }
 
-        // Update shape with career mode speed if applicable
+        // Update shape with dynamic speed for Career and Endless modes
         if (gameMode.equals(GameMode.CAREER) && !gameOver) {
             currentShape.updateWithSpeed(careerManager.getCurrentSpeed());
+        } else if (gameMode.equals(GameMode.ENDLESS) && !gameOver) {
+            currentShape.updateWithSpeed(endlessManager.getCurrentSpeed());
         } else {
             currentShape.update();
         }
@@ -195,12 +213,42 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
 
 
     private void checkGameOver() {
+        // Only check if game is not already over
+        if (gameOver) {
+            return;
+        }
+
         int[][] coords = currentShape.getCoords();
         for (int row = 0; row < coords.length; row++) {
             for (int col = 0; col < coords[0].length; col++) {
                 if (coords[row][col] != 0) {
                     if (board[row + currentShape.getY()][col + currentShape.getX()] != null) {
                         gameOver = true;
+
+                        // Show career game over screen
+                        if (gameMode.equals(GameMode.CAREER)) {
+                            showingCareerGameOver = true;
+                        }
+
+                        // Check high score for Classic mode (only once)
+                        if (gameMode.equals(GameMode.CLASSIC)) {
+                            if (score > classicHighScore) {
+                                classicHighScore = score;
+                                classicNewHighScore = true;
+                            } else {
+                                classicNewHighScore = false;
+                            }
+                            showingClassicGameOver = true;
+                        }
+
+                        // Check high score for Endless mode (only once)
+                        if (gameMode.equals(GameMode.ENDLESS)) {
+                            endlessManager.pause();
+                            endlessManager.checkHighScore(score);
+                            showingEndlessGameOver = true;
+                        }
+
+                        return; // Exit immediately after setting game over
                     }
                 }
             }
@@ -302,12 +350,28 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
         g.drawString("SCORE", WindowGame.WIDTH - 125, WindowGame.HEIGHT - 600 );
         g.drawString(score + "", WindowGame.WIDTH - 90, WindowGame.HEIGHT - 570);
 
+        // Draw Classic Mode info
+        if (gameMode.equals(GameMode.CLASSIC) && !gameOver) {
+            g.setFont(fontRegular);
+            g.drawString("BEST", WindowGame.WIDTH - 115, WindowGame.HEIGHT - 530);
+            g.drawString(classicHighScore + "", WindowGame.WIDTH - 90, WindowGame.HEIGHT - 500);
+        }
+
         // Draw Career Mode info
         if (gameMode.equals(GameMode.CAREER) && !gameOver) {
             g.setFont(fontRegular.deriveFont(21.5f));
             g.drawString("LEVEL " + careerManager.getCurrentLevel(), WindowGame.WIDTH - 125, WindowGame.HEIGHT - 530);
             g.drawString("LINES", WindowGame.WIDTH - 125, WindowGame.HEIGHT - 500);
             g.drawString(careerManager.getProgressText(), WindowGame.WIDTH - 125, WindowGame.HEIGHT - 475);
+        }
+
+        // Draw Endless Mode info
+        if (gameMode.equals(GameMode.ENDLESS) && !gameOver) {
+            g.setFont(fontRegular);
+            g.drawString("TIME", WindowGame.WIDTH - 115, WindowGame.HEIGHT - 525);
+            g.drawString(endlessManager.getFormattedTime(), WindowGame.WIDTH - 110, WindowGame.HEIGHT - 495);
+            g.drawString("BEST", WindowGame.WIDTH - 115, WindowGame.HEIGHT - 450);
+            g.drawString(endlessManager.getHighScore() + "", WindowGame.WIDTH - 90, WindowGame.HEIGHT - 420);
         }
 
         if (gamePaused && !showingLevelComplete && !showingCareerComplete) {
@@ -325,11 +389,16 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
             drawCareerComplete(g);
         }
 
-        if (gameOver && !showingCareerComplete) {
-            String gameOverString2 = "GAME OVER";
-            g.setColor(Color.WHITE);
-            g.setFont(fontBig);
-            g.drawString(gameOverString2, 50, WindowGame.HEIGHT / 2);
+        if (showingEndlessGameOver && gameMode.equals(GameMode.ENDLESS)) {
+            drawEndlessGameOver(g);
+        }
+
+        if (showingClassicGameOver && gameMode.equals(GameMode.CLASSIC)) {
+            drawClassicGameOver(g);
+        }
+
+        if (showingCareerGameOver && gameMode.equals(GameMode.CAREER)) {
+            drawCareerGameOver(g);
         }
     }
 
@@ -400,6 +469,137 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
         g.drawString(escText, textX, WindowGame.HEIGHT / 2 + 70);
     }
 
+    private void drawEndlessGameOver(Graphics g) {
+        // Semi-transparent overlay
+        g.setColor(new Color(0, 0, 0, 200));
+        g.fillRect(0, 0, WindowGame.WIDTH, WindowGame.HEIGHT);
+
+        // Game Over text
+        g.setFont(fontRegular);
+        g.setColor(Color.WHITE);
+        String gameOverText = "GAME OVER";
+        FontMetrics fm = g.getFontMetrics();
+        int textX = (WindowGame.WIDTH - fm.stringWidth(gameOverText)) / 2;
+        g.drawString(gameOverText, textX, WindowGame.HEIGHT / 2 - 100);
+
+        // New High Score indicator
+        if (endlessManager.isNewHighScore()) {
+            g.setFont(fontRegular.deriveFont(20f));
+            g.setColor(new Color(255, 215, 0));
+            String newHighScore = "NEW HIGH SCORE!";
+            fm = g.getFontMetrics();
+            textX = (WindowGame.WIDTH - fm.stringWidth(newHighScore)) / 2;
+            g.drawString(newHighScore, textX, WindowGame.HEIGHT / 2 - 60);
+        }
+
+        // Stats
+        g.setFont(fontRegular.deriveFont(18f));
+        g.setColor(Color.WHITE);
+        fm = g.getFontMetrics();
+
+        String scoreText = "Final Score: " + score;
+        textX = (WindowGame.WIDTH - fm.stringWidth(scoreText)) / 2;
+        g.drawString(scoreText, textX, WindowGame.HEIGHT / 2 - 20);
+
+        String linesText = "Lines Cleared: " + endlessManager.getLinesCleared();
+        textX = (WindowGame.WIDTH - fm.stringWidth(linesText)) / 2;
+        g.drawString(linesText, textX, WindowGame.HEIGHT / 2 + 10);
+
+        String timeText = "Time: " + endlessManager.getFormattedTime();
+        textX = (WindowGame.WIDTH - fm.stringWidth(timeText)) / 2;
+        g.drawString(timeText, textX, WindowGame.HEIGHT / 2 + 40);
+
+        // Instructions
+        g.setFont(fontRegular.deriveFont(16f));
+        g.setColor(new Color(100, 255, 100));
+        String enterText = "Press ENTER to Play Again";
+        fm = g.getFontMetrics();
+        textX = (WindowGame.WIDTH - fm.stringWidth(enterText)) / 2;
+        g.drawString(enterText, textX, WindowGame.HEIGHT / 2 + 80);
+
+        g.setColor(new Color(255, 255, 100));
+        String escText = "Press ESC to Return to Menu";
+        textX = (WindowGame.WIDTH - fm.stringWidth(escText)) / 2;
+        g.drawString(escText, textX, WindowGame.HEIGHT / 2 + 110);
+    }
+
+    private void drawClassicGameOver(Graphics g) {
+        // Semi-transparent overlay
+        g.setColor(new Color(0, 0, 0, 200));
+        g.fillRect(0, 0, WindowGame.WIDTH, WindowGame.HEIGHT);
+
+        // Game Over text
+        g.setFont(fontRegular);
+        g.setColor(Color.WHITE);
+        String gameOverText = "GAME OVER";
+        FontMetrics fm = g.getFontMetrics();
+        int textX = (WindowGame.WIDTH - fm.stringWidth(gameOverText)) / 2;
+        g.drawString(gameOverText, textX, WindowGame.HEIGHT / 2 - 100);
+
+        // New High Score indicator
+        if (classicNewHighScore) {
+            g.setFont(fontRegular.deriveFont(20f));
+            g.setColor(new Color(255, 215, 0));
+            String newHighScore = "NEW HIGH SCORE!";
+            fm = g.getFontMetrics();
+            textX = (WindowGame.WIDTH - fm.stringWidth(newHighScore)) / 2;
+            g.drawString(newHighScore, textX, WindowGame.HEIGHT / 2 - 60);
+        }
+
+        // Stats
+        g.setFont(fontRegular.deriveFont(18f));
+        g.setColor(Color.WHITE);
+        fm = g.getFontMetrics();
+
+        String scoreText = "Final Score: " + score;
+        textX = (WindowGame.WIDTH - fm.stringWidth(scoreText)) / 2;
+        g.drawString(scoreText, textX, WindowGame.HEIGHT / 2 - 10);
+
+        String linesText = "Lines Cleared: " + classicLinesCleared;
+        textX = (WindowGame.WIDTH - fm.stringWidth(linesText)) / 2;
+        g.drawString(linesText, textX, WindowGame.HEIGHT / 2 + 25);
+
+        // Instructions
+        g.setFont(fontRegular.deriveFont(16f));
+        g.setColor(new Color(100, 255, 100));
+        String enterText = "Press ENTER to Play Again";
+        fm = g.getFontMetrics();
+        textX = (WindowGame.WIDTH - fm.stringWidth(enterText)) / 2;
+        g.drawString(enterText, textX, WindowGame.HEIGHT / 2 + 70);
+
+        g.setColor(new Color(255, 255, 100));
+        String escText = "Press ESC to Return to Menu";
+        textX = (WindowGame.WIDTH - fm.stringWidth(escText)) / 2;
+        g.drawString(escText, textX, WindowGame.HEIGHT / 2 + 100);
+    }
+
+    private void drawCareerGameOver(Graphics g) {
+        // Semi-transparent overlay
+        g.setColor(new Color(0, 0, 0, 200));
+        g.fillRect(0, 0, WindowGame.WIDTH, WindowGame.HEIGHT);
+
+        // Game Over text
+        g.setFont(fontRegular);
+        g.setColor(Color.WHITE);
+        String gameOverText = "GAME OVER";
+        FontMetrics fm = g.getFontMetrics();
+        int textX = (WindowGame.WIDTH - fm.stringWidth(gameOverText)) / 2;
+        g.drawString(gameOverText, textX, WindowGame.HEIGHT / 2 - 80);
+
+        // Instructions
+        g.setFont(fontRegular.deriveFont(16f));
+        g.setColor(new Color(100, 255, 100));
+        String enterText = "Press ENTER to Restart Level";
+        fm = g.getFontMetrics();
+        textX = (WindowGame.WIDTH - fm.stringWidth(enterText)) / 2;
+        g.drawString(enterText, textX, WindowGame.HEIGHT / 2 - 20);
+
+        g.setColor(new Color(255, 255, 100));
+        String escText = "Press ESC to Return to Menu";
+        textX = (WindowGame.WIDTH - fm.stringWidth(escText)) / 2;
+        g.drawString(escText, textX, WindowGame.HEIGHT / 2 + 10);
+    }
+
     private void checkCareerProgress() {
         if (gameMode.equals(GameMode.CAREER)) {
             if (careerManager.isCareerComplete()) {
@@ -416,6 +616,10 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
         if (gameMode.equals(GameMode.CAREER)) {
             careerManager.addLinesCleared(lines);
             checkCareerProgress();
+        } else if (gameMode.equals(GameMode.ENDLESS)) {
+            endlessManager.addLinesCleared(lines);
+        } else if (gameMode.equals(GameMode.CLASSIC)) {
+            classicLinesCleared += lines;
         }
     }
 
@@ -464,7 +668,7 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
                 }
 
                 careerShapeCoords = null;
-                careerGameOver = false;  // ← ADD THIS to ensure clean state
+                careerGameOver = false;  // to ensure clean state
                 showingLevelComplete = false;
                 gamePaused = false;
                 windowGame.returnToMenu();
@@ -475,7 +679,93 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
         // Handle career complete screen
         if (showingCareerComplete) {
             if (key == KeyEvent.VK_ESCAPE) {
-                gamePaused = false;  // ← ADD THIS LINE
+                gamePaused = false;
+                windowGame.returnToMenu();
+            }
+            return;
+        }
+
+        // Handle endless game over screen
+        if (showingEndlessGameOver) {
+            if (key == KeyEvent.VK_ENTER) {
+                // Play again - reset Endless mode
+                endlessScore = 0;
+                endlessLinesCleared = 0;
+                clearBoard(endlessBoard);
+                endlessGameOver = false;
+                endlessShapeCoords = null;
+                endlessManager.reset();
+                showingEndlessGameOver = false;
+
+                score = 0;
+                for (int row = 0; row < board.length; row++) {
+                    for (int col = 0; col < board[row].length; col++) {
+                        board[row][col] = null;
+                    }
+                }
+
+                setNextShape();
+                setCurrentShape();
+                gameOver = false;
+            } else if (key == KeyEvent.VK_ESCAPE) {
+                showingEndlessGameOver = false;
+                windowGame.returnToMenu();
+            }
+            return;
+        }
+
+        // Handle classic game over screen
+        if (showingClassicGameOver) {
+            if (key == KeyEvent.VK_ENTER) {
+                // Play again - reset Classic mode
+                classicScore = 0;
+                classicLinesCleared = 0;
+                clearBoard(classicBoard);
+                classicGameOver = false;
+                classicShapeCoords = null;
+                showingClassicGameOver = false;
+
+                score = 0;
+                for (int row = 0; row < board.length; row++) {
+                    for (int col = 0; col < board[row].length; col++) {
+                        board[row][col] = null;
+                    }
+                }
+
+                setNextShape();
+                setCurrentShape();
+                gameOver = false;
+            } else if (key == KeyEvent.VK_ESCAPE) {
+                showingClassicGameOver = false;
+                windowGame.returnToMenu();
+            }
+            return;
+        }
+
+        // Handle career game over screen
+        if (showingCareerGameOver) {
+            if (key == KeyEvent.VK_ENTER) {
+                // Restart current level
+                clearBoard(careerBoard);
+                int levelCleared = careerManager.getLinesCleared();
+                careerManager.addLinesCleared(-levelCleared);
+                careerScore = 0;
+                careerGameOver = false;
+                careerShapeCoords = null;
+                showingCareerGameOver = false;
+
+                score = 0;
+                for (int row = 0; row < board.length; row++) {
+                    for (int col = 0; col < board[row].length; col++) {
+                        board[row][col] = null;
+                    }
+                }
+
+                setNextShape();
+                setCurrentShape();
+                gameOver = false;
+            } else if (key == KeyEvent.VK_ESCAPE) {
+                showingCareerGameOver = false;
                 windowGame.returnToMenu();
             }
             return;
@@ -521,6 +811,12 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
         // Clear completion screens when starting
         showingLevelComplete = false;
         showingCareerComplete = false;
+        showingEndlessGameOver = false;
+
+        // Only reset Endless mode timer if it's a fresh start (game over or first time)
+        if (mode.equals(GameMode.ENDLESS) && (endlessGameOver || endlessStartTime == 0)) {
+            endlessManager.reset();
+        }
 
         // Always create next shape
         setNextShape();
@@ -542,6 +838,7 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
         if (gameMode.equals(GameMode.CLASSIC)) {
             classicScore = score;
             classicGameOver = gameOver;
+            // Don't reset lines when saving state
             copyBoard(board, classicBoard);
             // Save current falling shape (if exists)
             if (currentShape != null) {
@@ -561,8 +858,13 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
                 endlessShapeX = currentShape.getX();
                 endlessShapeY = currentShape.getY();
             }
+            // Save timer state
+            endlessStartTime = endlessManager.startTime;
+            endlessTotalPausedDuration = endlessManager.totalPausedDuration;
+            endlessLinesCleared = endlessManager.getLinesCleared();
         } else if (gameMode.equals(GameMode.CAREER)) {
             // Career mode state is already in careerManager
+            careerScore = score;
             careerGameOver = gameOver;
             copyBoard(board, careerBoard);
             // Save current falling shape (if exists)
@@ -580,9 +882,11 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
             // Reset if THIS MODE was over
             if (classicGameOver) {
                 classicScore = 0;
+                classicLinesCleared = 0;
                 clearBoard(classicBoard);
                 classicGameOver = false;
                 classicShapeCoords = null; // Clear saved shape
+                showingClassicGameOver = false;
             }
             score = classicScore;
             copyBoard(classicBoard, board);
@@ -604,11 +908,24 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
                 clearBoard(endlessBoard);
                 endlessGameOver = false;
                 endlessShapeCoords = null; // Clear saved shape
+                endlessManager.reset();
+                showingEndlessGameOver = false;
+                // Clear saved timer state
+                endlessStartTime = 0;
+                endlessTotalPausedDuration = 0;
+                endlessLinesCleared = 0;
             }
             score = endlessScore;
             copyBoard(endlessBoard, board);
             gameOver = endlessGameOver;
             gamePaused = false;
+
+            // Restore timer state if continuing (not game over)
+            if (!endlessGameOver && endlessStartTime > 0) {
+                endlessManager.startTime = endlessStartTime;
+                endlessManager.totalPausedDuration = endlessTotalPausedDuration;
+                endlessManager.linesCleared = endlessLinesCleared;
+            }
 
             // Restore falling shape if it exists, otherwise set to null
             if (endlessShapeCoords != null && !endlessGameOver) {
@@ -623,6 +940,7 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
             if (careerManager.isCareerComplete()) {
                 careerManager.reset();
                 clearBoard(careerBoard);
+                careerScore = 0;
                 showingLevelComplete = false;
                 showingCareerComplete = false;
                 gamePaused = false;
@@ -635,10 +953,12 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
                 // Reset lines cleared for current level only
                 int levelCleared = careerManager.getLinesCleared();
                 careerManager.addLinesCleared(-levelCleared);
+                careerScore = 0;
                 careerGameOver = false;
+                showingCareerGameOver = false;
                 careerShapeCoords = null; // Clear saved shape
             }
-            score = 0;
+            score = careerScore;
             copyBoard(careerBoard, board);
             gameOver = careerGameOver;
             gamePaused = false;
@@ -722,30 +1042,54 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
         mouseX = e.getX();
         mouseY = e.getY();
         if(stopBounds.contains(mouseX, mouseY)) {
-            gamePaused = !gamePaused;
+            // Don't allow pause during completion screens
+            if (showingLevelComplete || showingCareerComplete || showingEndlessGameOver || showingClassicGameOver || showingCareerGameOver) {
+                return;
+            }
+            if (gamePaused) {
+                gamePaused = false;
+                if (gameMode.equals(GameMode.ENDLESS)) {
+                    endlessManager.resume();
+                }
+            } else {
+                gamePaused = true;
+                if (gameMode.equals(GameMode.ENDLESS)) {
+                    endlessManager.pause();
+                }
+            }
         }
         if(refreshBounds.contains(mouseX,mouseY)) {
+            // Don't allow refresh during completion screens
+            if (showingLevelComplete || showingCareerComplete || showingEndlessGameOver || showingClassicGameOver || showingCareerGameOver) {
+                return;
+            }
             // Reset only the current mode's state
             if (gameMode.equals(GameMode.CAREER)) {
                 // Reset only the current level, not the entire career
                 int levelCleared = careerManager.getLinesCleared();
                 careerManager.addLinesCleared(-levelCleared); // Reset current level lines to 0
+                careerScore = 0;
 
                 showingLevelComplete = false;
                 showingCareerComplete = false;
+                showingCareerGameOver = false;
                 clearBoard(careerBoard);
                 careerGameOver = false;
                 careerShapeCoords = null; // Clear saved shape
             } else if (gameMode.equals(GameMode.CLASSIC)) {
                 classicScore = 0;
+                classicLinesCleared = 0;
                 clearBoard(classicBoard);
                 classicGameOver = false;
                 classicShapeCoords = null; // Clear saved shape
+                showingClassicGameOver = false;
             } else if (gameMode.equals(GameMode.ENDLESS)) {
                 endlessScore = 0;
                 clearBoard(endlessBoard);
                 endlessGameOver = false;
                 endlessShapeCoords = null; // Clear saved shape
+                endlessManager.reset();
+                showingEndlessGameOver = false;
             }
 
             score = 0;
@@ -769,6 +1113,10 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
             }
         }
         if (menuBounds.contains(mouseX, mouseY)) {
+            // Don't allow menu button during completion screens - use ESC key instead
+            if (showingLevelComplete || showingCareerComplete || showingEndlessGameOver || showingClassicGameOver || showingCareerGameOver) {
+                return;
+            }
             windowGame.returnToMenu();
         }
     }
