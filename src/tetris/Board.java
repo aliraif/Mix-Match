@@ -14,9 +14,12 @@ import javax.swing.Timer;
 import java.awt.image.BufferedImage;
 import audio.SoundManager;
 
+
 public class Board extends JPanel implements KeyListener, MouseListener, MouseMotionListener {
 
+
     private BufferedImage menuIcon;
+    private boolean soundEnabled = true;
     private Rectangle menuBounds;
     private WindowGame windowGame;
     private int score = 0;
@@ -82,7 +85,6 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
 
     private BufferedImage pause, refresh, soundOnIcon, soundOffIcon;
     private Rectangle stopBounds, refreshBounds, soundBounds;
-    private boolean soundEnabled = true;
 
     private Random random;
 
@@ -641,7 +643,15 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
 
         currentShape.reset();
         checkGameOver();
+
+        if (soundEnabled) {
+            SoundManager.play("drop");
+        }
+
+        checkGameOver();
     }
+
+
 
     @Override
     public void keyTyped(KeyEvent e) { }
@@ -777,12 +787,16 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
                 currentShape.speedUp();
             } else if (key == KeyEvent.VK_RIGHT || key == KeyEvent.VK_D) {
                 currentShape.moveRight();
+                if (soundEnabled) SoundManager.play("move");
             } else if (key == KeyEvent.VK_LEFT || key == KeyEvent.VK_A) {
                 currentShape.moveLeft();
+                if (soundEnabled) SoundManager.play("move");
             } else if (key == KeyEvent.VK_UP || key == KeyEvent.VK_W) {
                 currentShape.rotateShape();
+                if (soundEnabled) SoundManager.play("rotate");
             }
         }
+
     }
 
     @Override
@@ -1121,8 +1135,15 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
         }
     }
 
+    public class Settings {
+        public static boolean soundEnabled = true;
+    }
+
+
     @Override
     public void mousePressed(MouseEvent e) {
+        if (soundEnabled) SoundManager.play("restart");
+
     }
 
     @Override

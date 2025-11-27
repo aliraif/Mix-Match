@@ -1,6 +1,7 @@
 package tetris;
 
 import java.awt.*;
+import audio.SoundManager;
 
 public class Shape {
     private Color color;
@@ -18,6 +19,9 @@ public class Shape {
     private boolean collision = false;
     private int[][] coords;
     private Board board;
+    private boolean soundEnabled = true;
+
+
 
     public Shape(int[][] coords,Board board ,Color color){
         this.coords = coords;
@@ -186,6 +190,9 @@ public class Shape {
                 board.addScore(10);
                 linesCleared++;
             }
+            if (soundEnabled) {
+                SoundManager.play("sounds/lineclear.wav");
+            }
             if(count < board.getBoard() [0].length) {
                 bottomLine--;
             }
@@ -194,6 +201,7 @@ public class Shape {
         // Notify board of lines cleared
         if (linesCleared > 0) {
             board.onLinesCleared(linesCleared);
+
         }
     }
 
