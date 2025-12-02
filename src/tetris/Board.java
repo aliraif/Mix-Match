@@ -188,6 +188,7 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
             @Override
             public void  actionPerformed(ActionEvent e){
                 if (gameOver) {
+                    SoundManager.stopAll();
                     repaint();
                     return;
                 }
@@ -633,7 +634,7 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
         checkGameOver();
 
         if (soundEnabled) {
-            SoundManager.play("drop");
+            SoundManager.play("sfx/drop.wav");
         }
 
         checkGameOver();
@@ -685,7 +686,9 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
 
         // Handle endless game over screen
         if (showingEndlessGameOver) {
+            SoundManager.stopAll();
             if (key == KeyEvent.VK_ENTER) {
+                SoundManager.playLoop("sfx/Tetris.wav");
                 // Play again - reset Endless mode
                 endlessScore = 0;
                 endlessLinesCleared = 0;
@@ -714,7 +717,9 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
 
         // Handle classic game over screen
         if (showingClassicGameOver) {
+            SoundManager.stopAll();
             if (key == KeyEvent.VK_ENTER) {
+                SoundManager.playLoop("sfx/Tetris.wav");
                 // Play again - reset Classic mode
                 classicScore = 0;
                 classicLinesCleared = 0;
@@ -742,7 +747,9 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
 
         // Handle career game over screen
         if (showingCareerGameOver) {
+            SoundManager.stopAll();
             if (key == KeyEvent.VK_ENTER) {
+                SoundManager.playLoop("sfx/Tetris.wav");
                 // Restart current level
                 clearBoard(careerBoard);
                 int levelCleared = careerManager.getLinesCleared();
@@ -775,13 +782,13 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
                 currentShape.speedUp();
             } else if (key == KeyEvent.VK_RIGHT || key == KeyEvent.VK_D) {
                 currentShape.moveRight();
-                if (soundEnabled) SoundManager.play("move");
+                if (soundEnabled) SoundManager.play("sfx/move.wav");
             } else if (key == KeyEvent.VK_LEFT || key == KeyEvent.VK_A) {
                 currentShape.moveLeft();
-                if (soundEnabled) SoundManager.play("move");
+                if (soundEnabled) SoundManager.play("sfx/move.wav");
             } else if (key == KeyEvent.VK_UP || key == KeyEvent.VK_W) {
                 currentShape.rotateShape();
-                if (soundEnabled) SoundManager.play("rotate");
+                if (soundEnabled) SoundManager.play("sfx/rotate.wav");
             }
         }
 
@@ -1122,7 +1129,7 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
 
     @Override
     public void mousePressed(MouseEvent e) {
-        if (soundEnabled) SoundManager.play("restart");
+        if (soundEnabled) SoundManager.play("sfx/pou.wav");
 
     }
 

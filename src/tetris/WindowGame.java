@@ -71,7 +71,7 @@ public class WindowGame {
         new WindowGame();
         SoundManager.stopAll();
         //SoundManager.playLoop("sfx/HoldOnTight.wav");
-        SoundManager.playLoop("sfx/Tetris.wav");
+        SoundManager.playLoop("sfx/WiiU.wav");
     }
 
     public static FileManager getFileManager() {

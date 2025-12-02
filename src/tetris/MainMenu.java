@@ -1,5 +1,7 @@
 package tetris;
 
+import audio.SoundManager;
+
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
@@ -515,6 +517,8 @@ public class MainMenu extends JPanel implements MouseListener, MouseMotionListen
             // Handle main menu clicks
             if (playButton.contains(mouseX, mouseY)) {
                 windowGame.startTetris(selectedMode);
+                SoundManager.stopAll();
+                SoundManager.playLoop("sfx/Tetris.wav");
             } else if (gameModeButton.contains(mouseX, mouseY)) {
                 showingModeSelection = true;
             } else if (exitButton.contains(mouseX, mouseY)) {
