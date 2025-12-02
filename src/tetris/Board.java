@@ -84,7 +84,7 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
     private int mouseX, mouseY;
 
     private BufferedImage pause, refresh, soundOnIcon, soundOffIcon;
-    private Rectangle stopBounds, refreshBounds, soundBounds;
+    private Rectangle stopBounds, refreshBounds;
 
     private Random random;
 
@@ -112,13 +112,12 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
 
         pause = ImageLoader.loadImage("/pause.png", 60 , 60 );
         refresh = ImageLoader.loadImage("/refresh.png", 60, 60);
-        soundOnIcon = ImageLoader.loadImage("/soundOn.png", 60, 60);
-        soundOffIcon = ImageLoader.loadImage("/soundOff.png", 60, 60);
+        //soundOnIcon = ImageLoader.loadImage("/soundOn.png", 60, 60);
+        //soundOffIcon = ImageLoader.loadImage("/soundOff.png", 60, 60);
         menuIcon = ImageLoader.loadImage("/menu.png", 60, 60);
 
         stopBounds = new Rectangle(330, 490, pause.getWidth(), pause.getHeight());
         refreshBounds = new Rectangle(330, 500 - refresh.getHeight() - 10 , refresh.getWidth(), refresh.getHeight());
-        soundBounds = new Rectangle(330, 310, 70, 70);
         menuBounds = new Rectangle(330,370,70,70);
         random = new Random();
 
@@ -284,15 +283,6 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
             g.drawImage(refresh, refreshBounds.x, refreshBounds.y, null);
         }
 
-        BufferedImage currentSoundIcon = soundEnabled ? soundOnIcon : soundOffIcon;
-
-        if (soundBounds.contains(mouseX, mouseY)) {
-            g.drawImage(currentSoundIcon.getScaledInstance(70, 70, BufferedImage.SCALE_SMOOTH),
-                    soundBounds.x + 3, soundBounds.y + 3, null);
-        } else {
-            g.drawImage(currentSoundIcon, soundBounds.x, soundBounds.y, null);
-        }
-
         // draw menu button
         if (menuBounds.contains(mouseX, mouseY)) {
             g.drawImage(menuIcon.getScaledInstance(70, 70, BufferedImage.SCALE_SMOOTH),
@@ -300,8 +290,6 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
         } else {
             g.drawImage(menuIcon, menuBounds.x, menuBounds.y, null);
         }
-
-
 
         // draw board block
         for(int row = 0; row < board.length; row++){
@@ -1117,15 +1105,7 @@ public class Board extends JPanel implements KeyListener, MouseListener, MouseMo
             setCurrentShape();
             gameOver = false;
         }
-        if (soundBounds.contains(mouseX, mouseY)) {
-            soundEnabled = !soundEnabled;
-            if (soundEnabled){
-                SoundManager.stopAll();
-                SoundManager.playLoop("sfx/Tetris.wav");
-            }else{
-                SoundManager.stop("sfx/Tetris.wav");
-            }
-        }
+
         if (menuBounds.contains(mouseX, mouseY)) {
             // Don't allow menu button during completion screens - use ESC key instead
             if (showingLevelComplete || showingCareerComplete || showingEndlessGameOver || showingClassicGameOver || showingCareerGameOver) {

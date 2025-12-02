@@ -7,8 +7,11 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import javax.swing.JPanel;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Random;
+import audio.SoundManager;
+
 
 public class MainMenu extends JPanel implements MouseListener, MouseMotionListener, KeyListener {
 
@@ -19,6 +22,7 @@ public class MainMenu extends JPanel implements MouseListener, MouseMotionListen
     private Rectangle exitButton;
 
     private Rectangle gameModeButton;
+    private Rectangle soundBounds;
 
     // Game mode selection buttons
     private Rectangle classicModeButton;
@@ -29,11 +33,14 @@ public class MainMenu extends JPanel implements MouseListener, MouseMotionListen
     // Track which screen we're on
     private boolean showingModeSelection = false;
     private String selectedMode = GameMode.CLASSIC;
+    private boolean soundEnabled = true;
 
     private static FileManager fileManager;
     private static Font fontRegular;
     private static Font fontBig;
     private static Font fontbig;
+
+    private BufferedImage soundOnIcon, soundOffIcon;
 
     private ArrayList<FloatingBlock> floatingBlocks;
     private Random random;
@@ -58,6 +65,7 @@ public class MainMenu extends JPanel implements MouseListener, MouseMotionListen
         playButton = new Rectangle(WindowGame.WIDTH / 2 - 100, 210, 200, 45);
         gameModeButton = new Rectangle(WindowGame.WIDTH / 2 - 100, 250, 200, 45);
         exitButton = new Rectangle(WindowGame.WIDTH / 2 - 100, 290, 200, 45);
+        soundBounds = new Rectangle(WindowGame.WIDTH - 70, 20, 50, 50);
 
         // Initialize game mode selection button bounds
         classicModeButton = new Rectangle(WindowGame.WIDTH / 2 - 150, 200, 300, 60);
@@ -98,6 +106,50 @@ public class MainMenu extends JPanel implements MouseListener, MouseMotionListen
         }
     }
 
+    private void drawSoundIcon(Graphics2D g2d, int x, int y, int size, boolean soundOn, boolean isHovered) {
+        // Scale factor for hover effect
+        int drawSize = isHovered ? size + 5 : size;
+        int offset = isHovered ? -2 : 0;
+
+        // Calculate center position
+        int centerX = x + offset + drawSize / 2;
+        int centerY = y + offset + drawSize / 2;
+
+        // Set color to white for the icon
+        g2d.setColor(Color.WHITE);
+
+        // Draw speaker body (small rectangle)
+        g2d.fillRect(centerX - 10, centerY - 5, 6, 10);
+
+        // Draw speaker horn (triangle shape)
+        int[] hornX = {centerX - 4, centerX + 1, centerX + 1, centerX - 4};
+        int[] hornY = {centerY - 7, centerY - 11, centerY + 11, centerY + 7};
+        g2d.fillPolygon(hornX, hornY, 4);
+
+        if (soundOn) {
+            // Draw sound waves (3 arcs)
+            g2d.setStroke(new BasicStroke(2f));
+
+            // First wave (small)
+            g2d.drawArc(centerX + 1 - 4, centerY - 4, 8, 8, -45, 90);
+
+            // Second wave (medium)
+            g2d.drawArc(centerX + 1 - 7, centerY - 7, 14, 14, -45, 90);
+
+            // Third wave (large)
+            g2d.drawArc(centerX + 1 - 10, centerY - 10, 20, 20, -45, 90);
+        } else {
+            // Draw X mark for mute
+            g2d.setStroke(new BasicStroke(2.5f));
+
+            // First diagonal of X
+            g2d.drawLine(centerX + 5, centerY - 6, centerX + 13, centerY + 6);
+
+            // Second diagonal of X
+            g2d.drawLine(centerX + 13, centerY - 6, centerX + 5, centerY + 6);
+        }
+    }
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -112,6 +164,10 @@ public class MainMenu extends JPanel implements MouseListener, MouseMotionListen
         for (FloatingBlock block : floatingBlocks) {
             block.draw(g2d);
         }
+
+        // Draw sound button
+        boolean isHovered = soundBounds.contains(mouseX, mouseY);
+        drawSoundIcon(g2d, soundBounds.x, soundBounds.y, 50, soundEnabled, isHovered);
 
         if (showingModeSelection) {
             drawModeSelection(g2d);
@@ -313,13 +369,14 @@ public class MainMenu extends JPanel implements MouseListener, MouseMotionListen
         // Controls section
         g2d.setColor(new Color(255, 255, 255, 220));
         g2d.setFont(fontBig);
-        g2d.drawString("CONTROLS:", 60, instrY + 75);
+        g2d.drawString("CONTROLS :", 60, instrY + 70);
 
         g2d.setColor(new Color(220, 220, 255, 200));
         g2d.setFont(fontBig);
-        g2d.drawString("A / D -  Move Left/Right", 75, instrY + 100);
-        g2d.drawString("W -  Rotate Block", 75, instrY + 120);
-        g2d.drawString("S -  Speed Up Drop", 75, instrY + 140);
+        g2d.drawString("A / D -  Move Left/Right", 75, instrY + 90);
+        g2d.drawString("W -  Rotate Block", 75, instrY + 110);
+        g2d.drawString("S -  Speed Up Drop", 75, instrY + 130);
+        g2d.drawString("M - Mute",75, instrY + 150);
 
         // Additional tip
         g2d.setColor(new Color(255, 200, 100, 180));
@@ -424,10 +481,24 @@ public class MainMenu extends JPanel implements MouseListener, MouseMotionListen
         }
     }
 
+    private void toggleSound() {
+        soundEnabled = !soundEnabled;
+        if (soundEnabled) {
+            SoundManager.uncutAllSound();
+        } else {
+            SoundManager.cutAllSound();
+        }
+    }
+
     @Override
     public void mouseClicked(MouseEvent e) {
         mouseX = e.getX();
         mouseY = e.getY();
+
+        if (soundBounds.contains(mouseX, mouseY)){
+            toggleSound();
+            return;
+        }
 
         if (showingModeSelection) {
             // Handle mode selection screen clicks
@@ -482,6 +553,10 @@ public class MainMenu extends JPanel implements MouseListener, MouseMotionListen
 
     @Override
     public void keyPressed(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_M) {
+            toggleSound();
+        }
+
         if (showingModeSelection) {
             if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
                 showingModeSelection = false;
