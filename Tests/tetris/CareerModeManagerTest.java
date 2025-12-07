@@ -15,27 +15,27 @@ class CareerModeManagerTest {
     @Test
     void testCompleteAll5Levels() {
         // Complete level 1
-        manager.addLinesCleared(1);
+        manager.addLinesCleared(5);
         assertTrue(manager.isLevelComplete());
         manager.advanceToNextLevel();
 
         // Complete level 2
-        manager.addLinesCleared(2);
+        manager.addLinesCleared(10);
         assertTrue(manager.isLevelComplete());
         manager.advanceToNextLevel();
 
         // Complete level 3
-        manager.addLinesCleared(3);
+        manager.addLinesCleared(15);
         assertTrue(manager.isLevelComplete());
         manager.advanceToNextLevel();
 
         // Complete level 4
-        manager.addLinesCleared(4);
+        manager.addLinesCleared(20);
         assertTrue(manager.isLevelComplete());
         manager.advanceToNextLevel();
 
         // Complete level 5
-        manager.addLinesCleared(5);
+        manager.addLinesCleared(25);
         assertTrue(manager.isLevelComplete());
         assertTrue(manager.isCareerComplete());
     }

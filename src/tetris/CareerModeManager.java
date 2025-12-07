@@ -12,7 +12,7 @@ public class CareerModeManager {
     private boolean careerComplete;
 
     // Level requirements (lines to clear per level)
-    private static final int[] LINES_PER_LEVEL = {1, 2, 3, 4, 5};
+    private static final int[] LINES_PER_LEVEL = {5, 10, 15, 20, 25};
 
     // Speed settings (delay in milliseconds)
     private static final int[] SPEED_PER_LEVEL = {600, 510, 420, 330, 240};

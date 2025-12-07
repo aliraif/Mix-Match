@@ -16,7 +16,7 @@ public class EndlessModeManager {
 
     // Speed settings
     private static final int START_SPEED = 600;
-    private static final int MAX_SPEED = 200;
+    private static final int MAX_SPEED = 50;
     private static final double SPEED_MULTIPLIER = 0.90; // 10% faster each level
     private static final long SPEED_INCREASE_INTERVAL = 30000; // 30 seconds in milliseconds
 
