@@ -6,12 +6,18 @@ Project Description : A modern recreation of the classic Tetris game featuring s
 
 ## Team Members
 
-| No. | Name                                                                                                                                                                                                                                                                                                                                                                                | Requirements                   |
-|-----|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------|
-| 1   | [Ali](https://github.com/aliraif)                                                                                              | [Core Game & Debugging](MixAndMatch.md) |
-| 2   | [Khegay Viktoriya Andreevna](https://github.com/Hosy0909)                                                                                            | [Core Game & Sounds Effect](MixAndMatch.md)       |
-| 3   | [Haifa](https://github.com/ainardini)                                                                                             | [Core Game & Main Menu](MixAndMatch.md)       |
-| 4   | [Abdullaev Mukhammadiusuf](https://github.com/Yusuf-hacker)                                                                                              | [Core Game](MixAndMatch.md)       |
-| 5   | [Naufal](https://github.com/naufalismail040),                                                                                               | [Core Game & Game Mode](MixAndMatch.md)       |
-| 6   | [Harris Zubayr](https://github.com/harriszbyr)                                                                                               | [Core Game & UI](MixAndMatch.md)       |
+Ali : Leader
+Harris : Sub-Leader
+Haifa : Developer & File Manager
+Naufal : Developer
+Viktoriya : Developer
+Yusuf : Developer
 
+## Member Roles 
+
+Ali : Project manager,core game implementation, sounds systems, debugging
+Harris : Core game implementation, UI design
+Haifa : Core game implementation, Main Menu, file manager
+Naufal : Core game implementation, game mode
+Viktoriya : Core game implementation, sound effects
+Yusuf : Core game implementation
