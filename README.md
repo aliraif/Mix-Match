@@ -7,11 +7,11 @@ Project Description : A modern recreation of the classic Tetris game featuring s
 ## Team Members
 
 Ali : Leader
-Harris : Sub-Leader
-Haifa : Developer & File Manager
-Naufal : Developer
-Viktoriya : Developer
-Yusuf : Developer
+\nHarris : Sub-Leader
+\nHaifa : Developer & File Manager
+\nNaufal : Developer
+\nViktoriya : Developer
+\nYusuf : Developer
 
 ## Member Roles 
 
