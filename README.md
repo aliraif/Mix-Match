@@ -15,9 +15,9 @@ Project Description : A modern recreation of the classic Tetris game featuring s
 
 ## Member Roles 
 
-1. Ali : Project manager,core game implementation, sounds systems, debugging
-2. Harris : Core game implementation, UI design
-3. Haifa : Core game implementation, Main Menu, file manager
-4. Naufal : Core game implementation, game mode
-5. Viktoriya : Core game implementation, sound effects
-6. Yusuf : Core game implementation
+1. [Ali](https://github.com/aliraif) : Project manager,core game implementation, sounds systems, debugging
+2. [Harris](https://github.com/harriszbyr) : Core game implementation, UI design
+3. [Haifa](https://github.com/ainardini) : Core game implementation, Main Menu, file manager
+4. [Naufal](https://github.com/naufalismail040) : Core game implementation, game mode
+5. [Viktoriya](https://github.com/Hosy0909) : Core game implementation, sound effects
+6. [Yusuf](https://github.com/httpyusf) : Core game implementation
